@@ -1,0 +1,36 @@
+[
+    {
+        "question": "Who was born on 17th February 1963? ",
+        "answer": "michael jordan",
+        "advise": "You can't recongize the name",
+        "score": "2",
+        "type": "short",
+        "keypoint": [" "]
+    },
+    {
+        "question": "Where were the 1936 Olympics held? ",
+        "answer": "germany",
+        "advise": "You can't get the properly country name",
+        "score": "2",
+        "type": "short",
+        "keypoint": [" "]
+    },
+    {
+        "question": "Look at the section on Para 4. Find and copy one word that means the same as called. ",
+        "answer": "summoned",
+        "advise": "You can't find out the correct vocab",
+        "score": "2",
+        "type": "short",
+        "keypoint": [" "]
+    },
+    {
+        "question": "Summarise what you have learnt about Michael Jordan using 20 words or fewer. ",
+        "answer": "",
+        "advise": "You can't summerise the article",
+        "score": "4",
+        "type": "long",
+        "keypoint": [
+            "good", "strong", "gay", "black"
+        ]
+    }
+]

@@ -1,0 +1,11 @@
+import socket
+
+s = socket.socket()
+s.bind(("0.0.0.0",1234))
+s.listen()
+c, addr = s.accept()
+with c:
+    print(addr , " connected")
+    while True:
+        data = c.recv(1024)
+        print(data)
