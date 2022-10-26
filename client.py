@@ -9,6 +9,8 @@ class main:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(("192.168.50.15",1234))
         s.sendall(b"hi, nigger")
+        self.data = s.recv(1025)
+        print(self.data.decode())
         nltk.download('punkt')
         print('''          _____                    _____                    _____                    _____                            _____                    _____                    _____          
          /\    \                  /\    \                  /\    \                  /\    \                          /\    \                  /\    \                  /\    \         
@@ -35,13 +37,24 @@ class main:
         self.initmode = input("Writing or reading?(w/r)")
         self.initmodeLower = self.initmode.lower()
         if self.initmodeLower == "r":
+            self.mode = input("Mock paper/Assignment/Self practice?(m/a/s)")
+            self.modeLower = self.mode.lower
+            if self.modeLower == "m":
+                self.dict == ("D:\git-repos\ENAIEDU\server\question\m\"")
+                s.sendall(self.dict)
+            elif self.modeLower == "a":
+                self.dict == ("D:\git-repos\ENAIEDU\server\question\a\"")
+                s.sendall(self.dict)
+            elif self.modeLower == "p":
+                self.dict == ("D:\git-repos\ENAIEDU\server\question\p\"")
+                s.sendall(b(self.dict))
             self.user = input("Are you ready to do the comprehansion?(y/n)")
             self.user = self.user.lower()
             while (self.user != "n"):
                 if (self.user == "y"):
                     self.no = input("Which passage you want to do?(1/2)")
-                    self.p = (self.no + ".txt")
-                    self.q = (self.no + ".json")
+                    self.p = (self.dict + self.no + ".txt")
+                    self.q = (self.dict + self.no + ".json")
                     self.fp = open(self.p, "r", encoding="utf-8")
                     self.fq = open(self.q, "r", encoding="utf-8")
                     self.question = []

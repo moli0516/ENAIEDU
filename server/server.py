@@ -6,6 +6,8 @@ s.listen()
 c, addr = s.accept()
 with c:
     print(addr , " connected")
+    c.sendall(b"System: connected to the server")
     while True:
         data = c.recv(1024)
-        print(data)
+        if data.decode() != "":
+            print(data.decode())
