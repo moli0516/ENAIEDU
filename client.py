@@ -40,21 +40,21 @@ class main:
             self.mode = input("Mock paper/Assignment/Self practice?(m/a/s)")
             self.modeLower = self.mode.lower
             if self.modeLower == "m":
-                self.dict == ("D:\git-repos\ENAIEDU\server\question\m\"")
-                s.sendall(self.dict)
+                self.location = "D:\git-repos\ENAIEDU\server\question\m\""
+                s.send(b"D:\git-repos\ENAIEDU\server\question\m\"")
             elif self.modeLower == "a":
-                self.dict == ("D:\git-repos\ENAIEDU\server\question\a\"")
-                s.sendall(self.dict)
+                self.location = "D:\git-repos\ENAIEDU\server\question\a\""
+                s.send(b"D:\git-repos\ENAIEDU\server\question\a\"")
             elif self.modeLower == "p":
-                self.dict == ("D:\git-repos\ENAIEDU\server\question\p\"")
-                s.sendall(b(self.dict))
+                self.location = "D:\git-repos\ENAIEDU\server\question\p\""
+                s.send(b"D:\git-repos\ENAIEDU\server\question\p\"")
             self.user = input("Are you ready to do the comprehansion?(y/n)")
             self.user = self.user.lower()
             while (self.user != "n"):
                 if (self.user == "y"):
                     self.no = input("Which passage you want to do?(1/2)")
-                    self.p = (self.dict + self.no + ".txt")
-                    self.q = (self.dict + self.no + ".json")
+                    self.p = (self.location + self.no + ".txt")
+                    self.q = (self.location + self.no + ".json")
                     self.fp = open(self.p, "r", encoding="utf-8")
                     self.fq = open(self.q, "r", encoding="utf-8")
                     self.question = []

@@ -1,0 +1,46 @@
+[
+    {
+        "question": "1. Chloe is reading a __________. ",
+        "answer": "A",
+        "advise": "You can't get the type of article",
+        "score": "1",
+        "type": "MC",
+        "keypoint": [" "],
+        "choice": ["A. biography",
+                   "B. poem", 
+                   "C. notice", 
+                   "D. report"]
+    },
+    {
+        "question": "2. Which of the following was true about Helen Keller? ",
+        "answer": "B",
+        "advise": "You can't understand what happend in the article",
+        "score": "1",
+        "type": "MC",
+        "keypoint": [" "],
+        "choice": ["A. She was blind when she was born.",
+                   "B. Anne was her only teacher.",
+                   "C. She learnt how to eat properly from her first teacher.",
+                   "D. She could not see, hear or talk when she met Anne Sullivan."]
+    },
+    {
+        "question": "3 In line 17 , what does ‘they’ refer to? ",
+        "answer": "The teachers",
+        "advise": "You can't find out the correct vocab",
+        "score": "1",
+        "type": "short",
+        "keypoint": [" "],
+        "choice": [" "]
+    },
+    {
+        "question": "4. According to Paragraph 4, what did Anne want Helen to do when eating? ",
+        "answer": "",
+        "advise": "You can't summerise the article",
+        "score": "2",
+        "type": "long",
+        "keypoint": [
+            "sit", "still"
+        ],
+        "choice": [" "]
+    }
+]
