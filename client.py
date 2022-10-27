@@ -1,3 +1,4 @@
+from multiprocessing.connection import answer_challenge
 import nltk
 from nltk.tokenize import word_tokenize
 import json
@@ -9,7 +10,7 @@ class main:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(("192.168.50.15",1234))
         s.sendall(b"hi, nigger")
-        self.data = s.recv(1025)
+        self.data = s.recv(1024)
         print(self.data.decode())
         nltk.download('punkt')
         print('''          _____                    _____                    _____                    _____                            _____                    _____                    _____          
@@ -35,75 +36,92 @@ class main:
          \/____/                  \/____/                  \/____/                  \/____/                          \/____/                  ~~                       ~~              
                                                                                                                                                                                        ''')
         self.initmode = input("Writing or reading?(w/r)")
-        self.initmodeLower = self.initmode.lower()
-        if self.initmodeLower == "r":
+        self.initmode = self.initmode.lower()
+        if self.initmode == "r":
             self.mode = input("Mock paper/Assignment/Self practice?(m/a/s)")
-            self.modeLower = self.mode.lower
+            self.modeLower = self.mode.lower()
             if self.modeLower == "m":
-                self.location = "D:\git-repos\ENAIEDU\server\question\m\""
-                s.send(b"D:\git-repos\ENAIEDU\server\question\m\"")
+                self.location = "D:\git-repos\ENAIEDU\server\question\m\\"
+                s.send(b"D:\git-repos\ENAIEDU\server\question\m\\")
             elif self.modeLower == "a":
-                self.location = "D:\git-repos\ENAIEDU\server\question\a\""
-                s.send(b"D:\git-repos\ENAIEDU\server\question\a\"")
+                self.location = "D:\git-repos\ENAIEDU\server\question\a\\"
+                s.send(b"D:\git-repos\ENAIEDU\server\question\a\\")
             elif self.modeLower == "p":
-                self.location = "D:\git-repos\ENAIEDU\server\question\p\""
-                s.send(b"D:\git-repos\ENAIEDU\server\question\p\"")
+                self.location = "D:\git-repos\ENAIEDU\server\question\p\\"
+                s.send(b"D:\git-repos\ENAIEDU\server\question\p\\")
+            self.no = input("Which passage you want to do?(1/2)")
+            self.p = (self.location + self.no + "\\" + self.no+ ".txt")
+            self.q = (self.location + self.no + "\\" + self.no+ ".json")
+            self.fp = open(self.p, "r", encoding="utf-8")
+            self.fq = open(self.q, "r", encoding="utf-8")
+            self.question = []
+            self.answer = []
+            self.advise = []
+            self.prescore = []
+            self.type = []
+            self.keypoint = []
+            self.choice = []
+            with open(self.q,encoding="utf-8") as f:
+                self.data = json.load(f)
+            for i in self.data:
+                self.question.append(i['question'])
+                self.answer.append(i['answer'])
+                self.advise.append(i['advise'])
+                self.prescore.append(int(i['score']))
+                self.type.append(i['type'])
+                self.keypoint.append(i['keypoint'])
+                self.choice.append(i['choice'])
             self.user = input("Are you ready to do the comprehansion?(y/n)")
             self.user = self.user.lower()
-            while (self.user != "n"):
-                if (self.user == "y"):
-                    self.no = input("Which passage you want to do?(1/2)")
-                    self.p = (self.location + self.no + ".txt")
-                    self.q = (self.location + self.no + ".json")
-                    self.fp = open(self.p, "r", encoding="utf-8")
-                    self.fq = open(self.q, "r", encoding="utf-8")
-                    self.question = []
-                    self.answer = []
-                    self.advise = []
-                    self.prescore = []
-                    self.type = []
-                    self.keypoint = []
-                    with open(self.q) as f:
-                        self.data = json.load(f)
-                    for i in self.data:
-                        self.question.append(i['question'])
-                        self.answer.append(i['answer'])
-                        self.advise.append(i['advise'])
-                        self.prescore.append(int(i['score']))
-                        self.type.append(i['type'])
-                        self.keypoint.append(i['keypoint'])
-                    self.passage()
-                    self.questions()
+            if (self.user == "y"):
+                self.reading()
+            elif (self.user == "n"):
+                self.quit()
         elif self.initmodeLower == "w":
             return
-        self.quit()
+    def reading(self):
+        self.passage()
+        self.questions()
     def passage(self):
         print(self.fp.read())
     def questions(self):
         self.score = 0
         self.result = []
         for i in range(len(self.question)):
-                inputAnswer = input(self.question[i])
-                if (inputAnswer == self.answer[i] and self.type[i] == "short"):
+            print(self.question[i])
+            if (self.type[i] == "MC"):
+                self.reqChoice = self.choice[i]
+                for l in range(len(self.reqChoice)):
+                    print(self.reqChoice[l])
+            inputAnswer = input("Answer: ")
+            inputAnswer = inputAnswer.lower()
+            if (inputAnswer == self.answer[i] and self.type[i] == "short"):
+                print("System: You are correct!")
+                self.score += self.prescore[i]
+                print(self.score)
+            elif (self.type[i] == "long"):
+                self.reqKeypoint = self.keypoint[i]
+                self.noKeypoint = 0
+                self.text = inputAnswer
+                self.tokenizedText = word_tokenize(self.text)
+                for l in range(len(self.tokenizedText)):
+                    for i in range(len(self.reqKeypoint)):
+                        if self.tokenizedText[l] == self.reqKeypoint[i]:
+                            self.noKeypoint += 1
+                self.score += self.noKeypoint
+            elif (self.type[i] == "MC"):
+                if inputAnswer == self.answer[i]:
                     print("System: You are correct!")
                     self.score += self.prescore[i]
                     print(self.score)
-                elif (self.type[i] == "long"):
-                    self.reqKeypoint = self.keypoint[i]
-                    self.score1 = self.prescore[i]
-                    self.noKeypoint = 0
-                    self.text = inputAnswer
-                    self.tokenizedText = word_tokenize(self.text)
-                    for l in range(len(self.tokenizedText)):
-                        for i in range(len(self.reqKeypoint)):
-                            if self.tokenizedText[l] == self.reqKeypoint[i]:
-                                self.noKeypoint += 1
-                    self.score += self.noKeypoint
-                elif (inputAnswer == "x"):
-                    self.quit()
                 else:
                     print("System: Oh no! You are wrong!")
                     self.result.append(self.advise[i])
+            elif (inputAnswer == "x"):
+                self.quit()
+            else:
+                print("System: Oh no! You are wrong!")
+                self.result.append(self.advise[i])
         print("score: " + str(self.score) + "/"  + str(sum(self.prescore)))
         if self.result == []:
             return

@@ -1,7 +1,7 @@
 [
     {
         "question": "1. Chloe is reading a __________. ",
-        "answer": "A",
+        "answer": "a",
         "advise": "You can't get the type of article",
         "score": "1",
         "type": "MC",
@@ -13,7 +13,7 @@
     },
     {
         "question": "2. Which of the following was true about Helen Keller? ",
-        "answer": "B",
+        "answer": "b",
         "advise": "You can't understand what happend in the article",
         "score": "1",
         "type": "MC",
@@ -25,8 +25,8 @@
     },
     {
         "question": "3 In line 17 , what does ‘they’ refer to? ",
-        "answer": "The teachers",
-        "advise": "You can't find out the correct vocab",
+        "answer": "the teachers",
+        "advise": "You can't find out the refer thing",
         "score": "1",
         "type": "short",
         "keypoint": [" "],
