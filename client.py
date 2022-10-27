@@ -44,6 +44,10 @@ class start:
 
 class finish:
     def __init__(self):
+        self.report = input("System: Type 'y' to get the report. ")
+        if self.report:
+            self.report1 = "report"
+            s.sendall(self.report1.encode())
         self.initmode = input("Writing or reading?(w/r)")
         self.initmode = self.initmode.lower()
         if self.initmode == "r":
@@ -144,7 +148,6 @@ class reading:
         if self.result == []:
             self.report1 = ("Grade: " + self.grade)
             self.report2 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
-            s.sendall(b"report")
             s.sendall(self.report1.encode())
             s.sendall(self.report2.encode())
             print("----------------------------------------------------------------------------------")
@@ -156,7 +159,6 @@ class reading:
                 print(self.index + ". " + self.result[i])
             self.report1 = ("Grade: " + self.grade)
             self.report2 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
-            s.sendall(b"report")
             s.sendall(self.report1.encode())
             s.sendall(self.report2.encode())
             print("----------------------------------------------------------------------------------")
