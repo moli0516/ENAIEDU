@@ -6,7 +6,7 @@ from kivy.core.window import Window
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty, NumericProperty
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle,RoundedRectangle
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
@@ -109,17 +109,12 @@ celebrated his work to promote peace.""",
 }
 
 screenManager = ScreenManager()
-class androidApp(App):
-    def build(self):
-        screenManager.add_widget(menuScreen(name='menuScreen'))
-        return screenManager
 
 def renderBG(elem,value):
     elem.canvas.before.clear()
     with elem.canvas.before:
         Color(elem.bgColor[0]/255,elem.bgColor[1]/255,elem.bgColor[2]/255,elem.bgColor[3])
         Rectangle(pos=elem.pos,size=elem.size)
-
 
 class menuScreen(Screen):
     def __init__(self, **kwargs):
@@ -156,18 +151,66 @@ class paperScreen(Screen):
         self.titleLabel = Label(text=self.paper,font_size='30sp',pos_hint={'x':.0,'y':.9},size_hint=(1,.1))
         self.exitBtn = Button(text="<<Exit",font_size='25sp',pos_hint={'x':.02,'y':.9},size_hint=(.1,.08),background_normal='',background_down='',background_color=(1,1,1,1))
         self.textBox = TextInput(text=Papers[self.paper]['text'],font_size='20sp',readonly=True,pos_hint={'x':.1,'y':.45},size_hint=(.8,.45))
+        self.previousBtn = Button(text="<=Previous",font_size='20sp',pos_hint={'x':.15,'y':.05},size_hint=(.18,.08),disabled=True)
+        self.nextBtn = Button(text="Next=>",font_size='20sp',pos_hint={'x':.67,'y':.05},size_hint=(.18,.08),disabled=True)
+        self.exitBtn.bind(on_press=self.returnMenu)
+        self.previousBtn.bind(on_press=self.previousQuestion)
+        self.nextBtn.bind(on_press=self.nextQuestion)
         self.add_widget(self.titleLabel)
         self.add_widget(self.exitBtn)
         self.add_widget(self.textBox)
+        self.add_widget(self.previousBtn)
+        self.add_widget(self.nextBtn)
         self.questionsElem = []
         for question in Papers[self.paper]['questions']:
             elems = []
-            questionLabel = Label(text=question['question'],font_size='20sp',pos_hint={'x':-.5,'y':-.2},halign="right",valign="middle")
+            questionLabel = Label(text=question['question'],font_size='18sp',pos_hint={'x':.02,'y':-.15},halign="left",valign="middle",padding=(70,70))
             questionLabel.bind(size=questionLabel.setter('text_size'))
             elems.append(questionLabel)
-            self.add_widget(questionLabel)
-            break
+            answerTextBox = None
+            if question['type']=="short":
+                answerTextBox = TextInput(hint_text="Short Answer",pos_hint={'x':.1,'y':.25},size_hint=(.4,.05),multiline=False)
+            elif question['type']=="long":
+                answerTextBox = TextInput(hint_text="Long Answer",pos_hint={'x':.1,'y':.15},size_hint=(.7,.13))
+            if answerTextBox:
+                answerTextBox.bind(text=self.answerTextBoxTyped)
+                elems.append(answerTextBox)
+            self.questionsElem.append(elems)
+        self.answered = [False for i in range(len(self.questionsElem))]
+        self.currentQuestion = 1
+        for elem in self.questionsElem[0]:
+            self.add_widget(elem)
+    def answerTextBoxTyped(self,textBox,value):
+        self.nextBtn.disabled = not value
+        self.answered[self.currentQuestion-1] = bool(value)
+    def previousQuestion(self,btn):
+        if self.currentQuestion == 1:return
+        self.nextBtn.disabled = False
+        self.nextBtn.text = "Next=>"
+        for elem in self.questionsElem[self.currentQuestion-1]: self.remove_widget(elem)
+        self.currentQuestion -= 1
+        for elem in self.questionsElem[self.currentQuestion-1]: self.add_widget(elem)
+        if self.currentQuestion == 1: btn.disabled = True
+    def nextQuestion(self,btn):
+        if self.currentQuestion != len(self.questionsElem):
+            self.previousBtn.disabled = False
+            for elem in self.questionsElem[self.currentQuestion-1]: self.remove_widget(elem)
+            self.currentQuestion += 1
+            for elem in self.questionsElem[self.currentQuestion-1]: self.add_widget(elem)
+            if not self.answered[self.currentQuestion-1]: btn.disabled = True
+            if self.currentQuestion == len(self.questionsElem): btn.text = "^Submit^"
+        else:
+            self.mappingAns()
+    def mappingAns(self):
+        pass #tmr's work la zzZ
+    def returnMenu(self,btn):
+        screenManager.switch_to(menuS,direction="right")
 
+menuS = menuScreen(name='menuScreen')
+class androidApp(App):
+    def build(self):
+        screenManager.add_widget(menuS)
+        return screenManager
 
 if __name__ == '__main__':
     androidApp().run()
