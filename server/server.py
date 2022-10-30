@@ -1,5 +1,5 @@
 import socket
-from types import NoneType
+import mysql.connector
 
 lines = []
 s = socket.socket()
@@ -18,8 +18,8 @@ with c:
         if data == "report":
             with open("D:\git-repos\ENAIEDU\server\\report\\report.txt", 'w') as f:
                 for i in range(len(lines)):
-                    if i<5:
-                        f.write(lines[i+5])
+                    if i<7:
+                        f.write(lines[i+7])
                         f.write('\n')
-                    elif i>7:
+                    elif i>9:
                         continue

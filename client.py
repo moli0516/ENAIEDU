@@ -7,6 +7,7 @@ import socket
 from colorama import Fore
 from colorama import Style
 import language_tool_python
+import mysql.connector
 
 tool = language_tool_python.LanguageTool('en-US')
 
@@ -17,6 +18,19 @@ s.connect(("192.168.50.15",1234))
 s.send(b"hi, nigger")
 dataS = s.recv(1024)
 print(dataS.decode())
+
+try:
+    db = mysql.connector.connect(
+        host = "localhost",
+        user = "root",
+        password = "Mcg0d516!",
+        db = "enai_db"
+    )
+
+except:
+    sys.exit("Error connecting to the host. Please check your inputs.")
+
+cursor = db.cursor()
 
 class start:
     def __init__(self):
@@ -42,13 +56,18 @@ class start:
         \::/    /                \::/    /                \::/    /                \::/    /                        \::/    /                \::/____/                \::/____/        
          \/____/                  \/____/                  \/____/                  \/____/                          \/____/                  ~~                       ~~              
                                                                                                                                                                                        ''')
-        self.initmode = input("Writing or reading?(w/r)")
-        self.initmode = self.initmode.lower()
-        if self.initmode == "r":
-            reading()
-        elif self.initmode == "w":
-            writing()
+        self.username = input("UserID: ")
+        self.password = input("Password:")
+        self.login()
 
+    def login(self):
+        try:
+            cursor.execute("SELECT * FROM user")
+        except mysql.connector.DatabaseError:
+            print("error")
+        cursor.execute("SHOW DATABASES")
+        databases = cursor.fetchall()
+        print(databases)
 class welcome:
     def __init__(self):
         self.initmode = input("Writing or reading?(w/r)")
