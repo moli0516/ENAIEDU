@@ -11,14 +11,15 @@ with c:
     c.sendall(b"System: connected to the server")
     while True:
         data = c.recv(1024)
-        print(data.decode())
-        lines.append(data.decode())
+        data = data.decode()
+        print(data)
+        lines.append(data)
         print(lines)
-        if data.decode() == "report":
+        if data == "report":
             with open("D:\git-repos\ENAIEDU\server\\report\\report.txt", 'w') as f:
                 for i in range(len(lines)):
-                    if i<3:
-                        f.write(lines[i+3])
+                    if i<5:
+                        f.write(lines[i+5])
                         f.write('\n')
-                    elif i>5:
+                    elif i>7:
                         continue

@@ -1,10 +1,16 @@
-from multiprocessing.connection import answer_challenge
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk import pos_tag
 import json
 import sys
 import socket
+from colorama import Fore
+from colorama import Style
+import language_tool_python
+
+tool = language_tool_python.LanguageTool('en-US')
+
+nltk.download('punkt')
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("192.168.50.15",1234))
@@ -14,7 +20,6 @@ print(dataS.decode())
 
 class start:
     def __init__(self):
-        nltk.download('punkt')
         print('''          _____                    _____                    _____                    _____                            _____                    _____                    _____          
          /\    \                  /\    \                  /\    \                  /\    \                          /\    \                  /\    \                  /\    \         
         /::\    \                /::\____\                /::\    \                /::\    \                        /::\    \                /::\    \                /::\____\        
@@ -41,7 +46,17 @@ class start:
         self.initmode = self.initmode.lower()
         if self.initmode == "r":
             reading()
+        elif self.initmode == "w":
+            writing()
 
+class welcome:
+    def __init__(self):
+        self.initmode = input("Writing or reading?(w/r)")
+        self.initmode = self.initmode.lower()
+        if self.initmode == "r":
+            reading()
+        elif self.initmode == "w":
+            writing()
 class finish:
     def __init__(self):
         self.report = input("System: Type 'y' to get the report. ")
@@ -168,4 +183,36 @@ class reading:
         print("System: Exiting...")
         sys.exit()
 
+class writing:
+    def __init__(self):
+        self.confirm = input("System: Have you uploaded your writing file as txt yet?(y/n) ")
+        if self.confirm != "n":
+            if self.confirm == "y":
+                self.fileName = input("System: File name?")
+                self.w = "D:\git-repos\ENAIEDU\server\writing\\1\\" + self.fileName + ".txt"
+                self.fw = open(self.w, 'r', encoding="utf-8")
+                self.text()
+
+    def text(self):
+        self.originText = self.fw.read()
+        print("origin text")
+        print(self.originText)
+        self.grammarChecking()
+
+    def grammarChecking(self):
+        self.mistake = []
+        self.correction = []
+        self.start = []
+        self.end = []
+        self.rule = []
+        self.matches = tool.check(self.originText)
+        print("Number of grammar mistake: " + str(len(self.matches)))
+        for i in self.matches:
+            if len(i.replacements) > 0:
+                self.start.append(i.offset)
+                self.end.append(i.errorLength + i.offset)
+                self.mistake.append(self.originText[i.offset:i.errorLength + i.offset])
+                self.correction.append(i.replacements[0])
+                self.rule.append(i.ruleIssueType)
+        print(list(zip(self.mistake, self.correction, self.rule)))
 start()

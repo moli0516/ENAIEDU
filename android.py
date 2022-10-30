@@ -1,3 +1,5 @@
+__version__ = "1.0.0"
+import kivy
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.core.window import Window
@@ -14,7 +16,92 @@ from kivy.uix.scrollview import ScrollView
 
 Window.clearcolor = (1,1,1,1)
 
-	@@ -103,24 +106,96 @@
+Builder.load_string("""
+<Label>
+    markup: True
+    color: 0,0,0,1
+""")
+Papers = {
+    'Paper1':{
+        'text':"""[1] Jesse Owens was born on 12th September 1913. He is
+known for winning four Olympic gold medals in track and
+field events. In 1935, Jesse took part in a total of 42 different sporting events and
+won them all. This amazing achievement earned him a place at the 1936
+Olympics in Berlin, Germany. During the 1936 Olympics, Germany was being 
+ruled by Adolf Hitler. After his success, Jesse Owens was called a hero by many people.
+However, lots of people believe that Jesse’s success was not
+what Hitler wanted to happen. This is because he wanted to
+use the Olympics to show how his group of white athletes
+were better than everyone else and Jesse proved him wrong.
+Today, there is a school in Berlin that has been named
+after Jesse.
+[2] Serena Williams is a famous tennis player who was born on 26th September
+1981. In total, she has won more Grand Slam tennis tournaments than any
+other player. Serena’s father started teaching her how to play tennis when she was three
+years old. By the time she was ten, Serena was the number one tennis
+player in the ten and under division. Serena has also won a total of four Olympic gold medals.
+Three of these have been in doubles tournaments alongside
+her sister, Venus. Throughout her career, Serena has suffered
+many injuries. Each time, she has returned to the game and proven what
+an incredible, talented player she is.
+[3] Michael Jordan was born on 17th February 1963 and is a
+successful basketball player. Throughout his career, he
+won a total of six NBA (National Basketball Association)
+championships with his team. When Michael was at university, 
+he joined the basketballteam. In 1982, they won the championship and, a few
+years later, Michael joined the NBA team, the Chicago Bulls.
+Michael continued learning while playing basketball and
+earned a degree in geography in 1985. Michael is 1.98 metres tall and can jump 
+over a metre straight up into the air!
+Before retiring in 2003, Michael played in 1,072 NBA games.
+[4] Muhammad Ali was a successful boxer who has a total of 56 victories. He
+was born on 17th January 1942 and was named Cassius Marcellus Clay Jr.
+When he was 12, Muhammad’s bike was stolen. The police officer who
+helped Muhammad also trained young boxers in his spare time. He invited
+him along to the gym to join in and, by 1954, Muhammad had won his first
+boxing match. In April 1967, Muhammad was summoned to join the military. He refused
+and openly said that he did not support the Vietnam War. This objection led
+to him being found guilty of refusing to serve in the military,
+which was against the law. While Muhammad argued against
+the decision, he was unable to box and missed over three
+years of competitions.
+In 1998, Muhammad was given an important award that
+celebrated his work to promote peace.""",
+        'questions':[
+            {
+                "question": "Who was born on 17th February 1963? ",
+                "answer": "michael jordan",
+                "advise": "You can't recongize the name",
+                "score": "2",
+                "type": "short",
+                "keypoint": [" "]
+            },
+            {
+                "question": "Where were the 1936 Olympics held? ",
+                "answer": "germany",
+                "advise": "You can't get the properly country name",
+                "score": "2",
+                "type": "short",
+                "keypoint": [" "]
+            },
+            {
+                "question": "Look at the section on Para 4. Find and copy one word that means the same as called. ",
+                "answer": "summoned",
+                "advise": "You can't find out the correct vocab",
+                "score": "2",
+                "type": "short",
+                "keypoint": [" "]
+            },
+            {
+                "question": "Summarise what you have learnt about Michael Jordan using 20 words or fewer. ",
+                "answer": "",
+                "advise": "You can't summerise the article",
+                "score": "4",
+                "type": "long",
+                "keypoint": [
+                    "good", "strong", "gay", "black"
+                ]
+            }
         ]
     },
     'Paper2':{
@@ -111,7 +198,8 @@ class menuScreen(Screen):
         self.titleLabel.bgColor = (42,196,240,.8)
         self.titleLabel.bind(pos=renderBG)
         self.add_widget(self.titleLabel)
-	@@ -129,12 +204,12 @@ def __init__(self, **kwargs):
+        paperHintY = 0.85
+        for paper in Papers:
             paperHintY -=.17
             bg = Label(text='',pos_hint={'x':0,'y':paperHintY},size_hint=(1,.15))
             bg.bgColor = (167,176,178,.8)
@@ -124,7 +212,12 @@ class menuScreen(Screen):
             self.add_widget(startBtn)
     def onstartBtnPressed(self,btn):
         if self.paperScreen:screenManager.remove_widget(self.paperScreen)
-	@@ -148,11 +223,11 @@ def __init__(self, **kwargs):
+        del self.paperScreen
+        self.paperScreen = paperScreen(name='paperScreen',paper=btn.paper)
+        screenManager.add_widget(self.paperScreen)
+        screenManager.switch_to(screen=self.paperScreen,direction='left')
+class paperScreen(Screen):
+    def __init__(self, **kwargs):
         self.paper = kwargs["paper"]
         del kwargs["paper"]
         super(paperScreen,self).__init__(**kwargs)
@@ -136,7 +229,11 @@ class menuScreen(Screen):
         self.exitBtn.bind(on_press=self.returnMenu)
         self.previousBtn.bind(on_press=self.previousQuestion)
         self.nextBtn.bind(on_press=self.nextQuestion)
-	@@ -164,14 +239,27 @@ def __init__(self, **kwargs):
+        self.add_widget(self.titleLabel)
+        self.add_widget(self.exitBtn)
+        self.add_widget(self.textBox)
+        self.add_widget(self.previousBtn)
+        self.add_widget(self.nextBtn)
         self.questionsElem = []
         for question in Papers[self.paper]['questions']:
             elems = []
@@ -164,7 +261,10 @@ class menuScreen(Screen):
             if answerTextBox:
                 answerTextBox.bind(text=self.answerTextBoxTyped)
                 elems.append(answerTextBox)
-	@@ -182,7 +270,10 @@ def __init__(self, **kwargs):
+            self.questionsElem.append(elems)
+        self.answered = [False for i in range(len(self.questionsElem))]
+        self.currentQuestion = 1
+        for elem in self.questionsElem[0]:
             self.add_widget(elem)
     def answerTextBoxTyped(self,textBox,value):
         self.nextBtn.disabled = not value
@@ -175,7 +275,17 @@ class menuScreen(Screen):
     def previousQuestion(self,btn):
         if self.currentQuestion == 1:return
         self.nextBtn.disabled = False
-	@@ -200,9 +291,70 @@ def nextQuestion(self,btn):
+        self.nextBtn.text = "Next=>"
+        for elem in self.questionsElem[self.currentQuestion-1]: self.remove_widget(elem)
+        self.currentQuestion -= 1
+        for elem in self.questionsElem[self.currentQuestion-1]: self.add_widget(elem)
+        if self.currentQuestion == 1: btn.disabled = True
+    def nextQuestion(self,btn):
+        if self.currentQuestion != len(self.questionsElem):
+            self.previousBtn.disabled = False
+            for elem in self.questionsElem[self.currentQuestion-1]: self.remove_widget(elem)
+            self.currentQuestion += 1
+            for elem in self.questionsElem[self.currentQuestion-1]: self.add_widget(elem)
             if not self.answered[self.currentQuestion-1]: btn.disabled = True
             if self.currentQuestion == len(self.questionsElem): btn.text = "^Submit^"
         else:
@@ -246,7 +356,10 @@ class menuScreen(Screen):
     def returnMenu(self,btn):
         screenManager.switch_to(menuS,direction="right")
 
+menuS = menuScreen(name='menuScreen')
+class androidApp(App):
     def build(self):
+        screenManager.add_widget(menuS)
         return screenManager
 
 if __name__ == '__main__':
