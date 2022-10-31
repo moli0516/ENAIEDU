@@ -31,22 +31,22 @@ def handleClient():
                         NAME.append(i['SNAME'])
                         SCHOOL.append(i['SCHOOL'])
                         GRADE.append(i['GRADE'])
-                        inputSID = "['" + str(lines[1])[3:] + "']"
-                        print(inputSID)
-                        print(SID)
-                        inputPassw = "['" + str(lines[2])[6:] + "']"
-                        print(inputPassw)
-                        print(PASSW)
-                        time.sleep(5)
-                        for i in range(len(SID)):
-                            if str(inputSID) == str(SID[i]):
-                                if str(inputPassw) == str(PASSW[i]):
-                                    print("login success")
-                                    s.sendall(NAME[i].encode())
-                                else:
-                                    print("Wrong Password")
+                        inputSID = str(lines[1])[3:] 
+                    print(inputSID)
+                    print(SID)
+                    inputPassw = str(lines[2])[6:]
+                    print(inputPassw)
+                    print(PASSW)
+                    time.sleep(5)
+                    for i in range(len(SID)):
+                        if str(inputSID) == str(SID[i]):
+                            if str(inputPassw) == str(PASSW[i]):
+                                print("login success")
+                                s.sendall(NAME[i].encode())
                             else:
-                                print("Wrong ID")
+                                print("Wrong Password")
+                        else:
+                            print("Wrong ID")
 
                 if data == "report":
                     with open("D:\git-repos\ENAIEDU\server\\report\\report.txt", 'w') as f:

@@ -52,7 +52,7 @@ class start:
 
     def login(self):
         time.sleep(5)
-        self.name = datas[2]
+        self.name = datas[1]
         if self.name:
             print("Welcome!" + self.name)
             welcome()
