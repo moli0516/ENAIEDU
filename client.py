@@ -23,7 +23,7 @@ try:
     db = mysql.connector.connect(
         host = "localhost",
         user = "root",
-        password = "Mcg0d516!",
+        password = "<password>",
         db = "enai_db"
     )
 
