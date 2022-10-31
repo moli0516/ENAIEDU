@@ -7,7 +7,6 @@ import socket
 from colorama import Fore
 from colorama import Style
 import language_tool_python
-import mysql.connector
 import time
 
 tool = language_tool_python.LanguageTool('en-US')
@@ -20,7 +19,6 @@ data = s.recv(1024)
 data = data.decode()
 datas.append(data)
 print(datas)
-
 
 class start:
     def __init__(self):
@@ -54,14 +52,12 @@ class start:
 
     def login(self):
         time.sleep(5)
-        for i in datas:
-            if i == 2:
-                self.name = datas[i]
-                if self.name:
-                    print("Welcome!" + self.name)
-                    welcome()
-            else:
-                pass
+        self.name = datas[2]
+        if self.name:
+            print("Welcome!" + self.name)
+            welcome()
+        else:
+            pass
 class welcome:
     def __init__(self):
         self.initmode = input("Writing or reading?(w/r)")
