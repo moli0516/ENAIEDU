@@ -8,29 +8,19 @@ from colorama import Fore
 from colorama import Style
 import language_tool_python
 import mysql.connector
+import time
 
 tool = language_tool_python.LanguageTool('en-US')
 
-nltk.download('punkt')
-
+datas = []
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("192.168.50.15",1234))
 s.send(b"hi, nigger")
-dataS = s.recv(1024)
-print(dataS.decode())
+data = s.recv(1024)
+data = data.decode()
+datas.append(data)
+print(datas)
 
-try:
-    db = mysql.connector.connect(
-        host = "localhost",
-        user = "root",
-        password = "Mcg0d516!",
-        db = "enai_db"
-    )
-
-except:
-    sys.exit("Error connecting to the host. Please check your inputs.")
-
-cursor = db.cursor()
 
 class start:
     def __init__(self):
@@ -56,18 +46,22 @@ class start:
         \::/    /                \::/    /                \::/    /                \::/    /                        \::/    /                \::/____/                \::/____/        
          \/____/                  \/____/                  \/____/                  \/____/                          \/____/                  ~~                       ~~              
                                                                                                                                                                                        ''')
-        self.username = input("UserID: ")
-        self.password = input("Password:")
+        self.username = "ID " + input("UserID: ")
+        s.sendall(self.username.encode())
+        self.password = "passw " + input("Password:")
+        s.sendall(self.password.encode())
         self.login()
 
     def login(self):
-        try:
-            cursor.execute("SELECT * FROM user")
-        except mysql.connector.DatabaseError:
-            print("error")
-        cursor.execute("SHOW DATABASES")
-        databases = cursor.fetchall()
-        print(databases)
+        time.sleep(5)
+        for i in datas:
+            if i == 2:
+                self.name = datas[i]
+                if self.name:
+                    print("Welcome!" + self.name)
+                    welcome()
+            else:
+                pass
 class welcome:
     def __init__(self):
         self.initmode = input("Writing or reading?(w/r)")
@@ -234,4 +228,6 @@ class writing:
                 self.correction.append(i.replacements[0])
                 self.rule.append(i.ruleIssueType)
         print(list(zip(self.mistake, self.correction, self.rule)))
-start()
+
+if __name__ == '__main__':
+    start()

@@ -1,0 +1,23 @@
+[
+    {
+        "SID": "220010001",
+        "PASSW": "test",
+        "SNAME": "TAM KING YEUNG OSCAR",
+        "SCHOOL": "KAU YAN COLLAGE",
+        "GRADE": 9
+    },
+    {
+        "SID": "220010002",
+        "PASSW": "()*#UJ@JA)",
+        "SNAME": "CHARM CHUN YIP",
+        "SCHOOL": "KAU YAN COLLAGE",
+        "GRADE": 9
+    },
+    {
+        "SID": "220010003",
+        "PASSW": ")*@HD(AI29",
+        "SNAME": "SHEK MAN KIN",
+        "SCHOOL": "KAU YAN COLLAGE",
+        "GRADE": 8
+    }
+]
