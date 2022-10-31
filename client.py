@@ -20,6 +20,7 @@ data = data.decode()
 datas.append(data)
 print(datas)
 
+studentDatas = []
 class start:
     def __init__(self):
         print('''          _____                    _____                    _____                    _____                            _____                    _____                    _____          
@@ -51,10 +52,19 @@ class start:
         self.login()
 
     def login(self):
-        time.sleep(5)
-        self.name = datas[1]
-        if self.name:
-            print("Welcome!" + self.name)
+        global name
+        global grade
+        global school
+        global SID
+        for i in range(4):
+            Data = s.recv(1024)
+            studentDatas.append(Data.decode())
+        name = studentDatas[0]
+        grade = studentDatas[1]
+        school = studentDatas[2]
+        SID = studentDatas[3]
+        if name:
+            print("Welcome! " + str(name))
             welcome()
         else:
             pass
@@ -160,20 +170,31 @@ class reading:
             else:
                 print("System: Oh no! You are wrong!")
                 self.result.append(self.advise[i])
-        if (self.score / sum(self.prescore)) > 0.6:
+        if (self.score / sum(self.prescore)) > 0.7:
             self.grade = "A"
-        elif (self.score / sum(self.prescore)) > 0.5:
+        elif (self.score / sum(self.prescore)) > 0.6:
             self.grade = "B"
-        elif (self.score / sum(self.prescore)) > 0.4:
+        elif (self.score / sum(self.prescore)) > 0.5:
             self.grade = "C"
-        elif (self.score / sum(self.prescore)) > 0.3:
+        elif (self.score / sum(self.prescore)) > 0.4:
             self.grade = "D"
+        elif (self.score / sum(self.prescore)) > 0.3:
+            self.grade = "E"
+        elif (self.score / sum(self.prescore)) > 0.2:
+            self.grade = "F"
         print("score: " + str(self.score) + "/"  + str(sum(self.prescore)))
         if self.result == []:
-            self.report1 = ("Grade: " + self.grade)
-            self.report2 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
+            self.report1 = ("SID: " + SID)
+            self.report2 = ("Name: " + name)
+            self.report3 = ("Grade: " + self.grade)
+            self.report4 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
             s.sendall(self.report1.encode())
+            time.sleep(0.5)
             s.sendall(self.report2.encode())
+            time.sleep(0.5)
+            s.sendall(self.report3.encode())
+            time.sleep(0.5)
+            s.sendall(self.report4.encode())
             print("----------------------------------------------------------------------------------")
             finish()
         else:
@@ -181,10 +202,17 @@ class reading:
             for i in range(len(self.result)):
                 self.index = str(i+1)
                 print(self.index + ". " + self.result[i])
-            self.report1 = ("Grade: " + self.grade)
-            self.report2 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
+            self.report1 = ("SID: " + SID)
+            self.report2 = ("Name: " + name)
+            self.report3 = ("Grade: " + self.grade)
+            self.report4 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
             s.sendall(self.report1.encode())
+            time.sleep(0.5)
             s.sendall(self.report2.encode())
+            time.sleep(0.5)
+            s.sendall(self.report3.encode())
+            time.sleep(0.5)
+            s.sendall(self.report4.encode())
             print("----------------------------------------------------------------------------------")
             finish()
             

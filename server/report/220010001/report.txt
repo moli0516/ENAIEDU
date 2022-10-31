@@ -1,0 +1,4 @@
+SID: 220010001
+Name: TAM KING YEUNG OSCAR
+Grade: B
+Score: 3/5

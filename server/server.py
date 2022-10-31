@@ -2,8 +2,9 @@ import socket
 import threading
 import json
 import time
+import os
 
-lines = []
+datas = []
 
 def handleClient():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -16,7 +17,7 @@ def handleClient():
             while True:
                 data = c.recv(1024)
                 data = data.decode()
-                lines.append(data)
+                datas.append(data)
                 if data.startswith("passw"):
                     SID = []
                     PASSW = []
@@ -31,32 +32,48 @@ def handleClient():
                         NAME.append(i['SNAME'])
                         SCHOOL.append(i['SCHOOL'])
                         GRADE.append(i['GRADE'])
-                        inputSID = str(lines[1])[3:] 
+                        inputSID = str(datas[1])[3:] 
                     print(inputSID)
                     print(SID)
-                    inputPassw = str(lines[2])[6:]
+                    inputPassw = str(datas[2])[6:]
                     print(inputPassw)
                     print(PASSW)
-                    time.sleep(5)
-                    for i in range(len(SID)):
-                        if str(inputSID) == str(SID[i]):
-                            if str(inputPassw) == str(PASSW[i]):
-                                print("login success")
-                                s.sendall(NAME[i].encode())
-                            else:
-                                print("Wrong Password")
+                    time.sleep(10)
+                    if str(inputSID) in SID:
+                        i = SID.index(inputSID)
+                        if str(inputPassw) == str(PASSW[i]):
+                            print("login success")
+                            c.sendall(NAME[i].encode())
+                            time.sleep(0.5)
+                            c.sendall(GRADE[i].encode())
+                            time.sleep(0.5)
+                            c.sendall(SCHOOL[i].encode())
+                            time.sleep(0.5)
+                            c.sendall(SID[i].encode())
                         else:
-                            print("Wrong ID")
+                             print("Wrong Password")
+                    else:
+                        print("Wrong ID")
 
                 if data == "report":
-                    with open("D:\git-repos\ENAIEDU\server\\report\\report.txt", 'w') as f:
-                        for i in range(len(lines)):
-                            if i == 6:
-                                f.write(lines[i])
-                                f.write(lines[i+1])
-                                f.write('\n')
-                            elif i>9:
-                                pass
+                    repDict = str(datas[5])[5:]
+                    parDict = "D:/git-repos/ENAIEDU/server/report/"
+                    path = os.path.join(parDict, repDict)
+                    try:
+                        os.mkdir(path)
+                    except FileExistsError:
+                        pass
+                    with open(path + "\\report.txt", 'w') as f:
+                        f.write(datas[5])
+                        f.write('\n')
+                        f.write(datas[6])
+                        f.write('\n')
+                        f.write(datas[7])
+                        f.write('\n')
+                        f.write(datas[8])
+                        f.write('\n')
+                else:
+                    pass
 
 t = threading.Thread(target=handleClient)
 t.start()
