@@ -3,8 +3,7 @@ from nltk.tokenize import word_tokenize
 import json
 import sys
 import socket
-from colorama import Fore
-from colorama import Style
+from colorama import Fore, Style, init
 import language_tool_python
 import time
 
@@ -255,7 +254,24 @@ class writing:
                 self.mistake.append(self.originText[i.offset:i.errorLength + i.offset])
                 self.correction.append(i.replacements[0])
                 self.rule.append(i.ruleIssueType)
-        print(list(zip(self.mistake, self.correction, self.rule)))
+        self.grammarMistake = list(zip(self.mistake, self.correction, self.rule))
+        for i in range(len(self.grammarMistake)):
+            print(self.grammarMistake[i])
+        self.newText = list(self.originText)
+ 
+ 
+        for m in range(len(self.start)):
+            for i in range(len(self.originText)):
+                self.newText[self.start[m]] = self.correction[m]
+                self.newText[self.start[m]] = Fore.RED + self.newText[self.start[m]] + Style.RESET_ALL
+                if (i>self.start[m] and i<self.end[m]):
+                    self.newText[i]=""
+     
+        self.newText = "".join(self.newText)
+        print("The new text:")
+        print(self.newText)
+  
 
 if __name__ == '__main__':
+    init(autoreset=True)
     start()
