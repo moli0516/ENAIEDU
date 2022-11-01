@@ -6,6 +6,8 @@ import socket
 from colorama import Fore, Style, init
 import language_tool_python
 import time
+import re
+import heapq
 
 tool = language_tool_python.LanguageTool('en-US')
 
@@ -259,7 +261,6 @@ class writing:
             print(self.grammarMistake[i])
         self.newText = list(self.originText)
  
- 
         for m in range(len(self.start)):
             for i in range(len(self.originText)):
                 self.newText[self.start[m]] = self.correction[m]
@@ -270,8 +271,48 @@ class writing:
         self.newText = "".join(self.newText)
         print("The new text:")
         print(self.newText)
-  
+        formattedText = re.sub('[^a-zA-Z]', ' ', self.newText)
+        formattedText = re.sub(r'\s+', ' ', formattedText)
+        if len(nltk.word_tokenize(formattedText)) > 200:
+            self.summarise()
+        else:
+            self.quit()
+        
+    def summarise(self):
+        stopwords = nltk.corpus.stopwords.words('english')
+        formattedText = re.sub('[^a-zA-Z]', ' ', self.newText)
+        formattedText = re.sub(r'\s+', ' ', formattedText)
+        sentenceList = nltk.sent_tokenize(self.newText)
+        
+        wordFeq = {}
+        for i in nltk.word_tokenize(formattedText):
+            if i not in stopwords:
+                if i not in wordFeq.keys():
+                    wordFeq[i] = 1
+                else:
+                    wordFeq[i] += 1
+        
+        maxFeq = max(wordFeq.values())
+        for i in wordFeq.keys():
+            wordFeq[i] = (wordFeq[i]/maxFeq)
+            
+        sentScore = {}
+        for i in sentenceList:
+            for j in nltk.word_tokenize(i.lower()):
+                if j in wordFeq.keys():
+                    if len(i.split(' ')) < 30:
+                        if i not in sentScore.keys():
+                            sentScore[i] = wordFeq[j]
+                        else:
+                            sentScore[i] += wordFeq[j]
+
+        summarySent = heapq.nlargest(7, sentScore, key=sentScore.get)
+        summary = ' '.join(summarySent)
+        print(summary)
+
+    def quit(self):
+        print("System: Exiting...")
+        sys.exit()
 
 if __name__ == '__main__':
-    init(autoreset=True)
     start()
