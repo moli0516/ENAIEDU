@@ -104,10 +104,11 @@ class reading:
         paperDatas = []
         print("System: Waiting to receive paper...")
         for i in range(2):
-            data = s.recv(1024)
+            data = s.recv(4096)
             paperDatas.append(data.decode())
-        self.text = paperDatas[1]
-        self.questBank = paperDatas[2]
+            time.sleep(1)
+        self.text = paperDatas[0]
+        self.questBank = paperDatas[1]
         self.questBank = json.loads(self.questBank)
         self.question = []
         self.answer = []

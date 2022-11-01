@@ -39,7 +39,7 @@ def handleClient():
                     inputPassw = str(datas[2])[6:]
                     print(inputPassw)
                     print(PASSW)
-                    time.sleep(10)
+                    time.sleep(2)
                     if str(inputSID) in SID:
                         i = SID.index(inputSID)
                         if str(inputPassw) == str(PASSW[i]):
@@ -58,12 +58,15 @@ def handleClient():
 
                 if data.endswith(".json"):
                     passage = open(datas[3], 'r', encoding="utf-8")
+                    passage = passage.read()
                     quest = open(datas[4], 'r', encoding="utf-8")
+                    quest = json.load(quest)
                     quest = json.dumps(quest)
-                    c.sendall(passage)
+                    c.sendall(passage.encode())
+                    print("transfered")
                     time.sleep(0.5)
-                    c.sendall(quest)
-
+                    c.sendall(quest.encode())
+                    print("transfered")
 
                 if data == "report":
                     repDict = str(datas[5])[5:]
