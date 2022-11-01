@@ -1,3 +1,4 @@
+from base64 import encode
 import socket
 import threading
 import json
@@ -54,6 +55,15 @@ def handleClient():
                              print("Wrong Password")
                     else:
                         print("Wrong ID")
+
+                if data.endswith(".json"):
+                    passage = open(datas[3], 'r', encoding="utf-8")
+                    quest = open(datas[4], 'r', encoding="utf-8")
+                    quest = json.dumps(quest)
+                    c.sendall(passage)
+                    time.sleep(0.5)
+                    c.sendall(quest)
+
 
                 if data == "report":
                     repDict = str(datas[5])[5:]
