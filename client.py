@@ -1,6 +1,5 @@
 import nltk
 from nltk.tokenize import word_tokenize
-from nltk import pos_tag
 import json
 import sys
 import socket
@@ -11,16 +10,11 @@ import time
 
 tool = language_tool_python.LanguageTool('en-US')
 
-datas = []
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(("192.168.50.15",1234))
+s.connect(("127.0.0.1",1234))
 s.send(b"hi, nigger")
 data = s.recv(1024)
 data = data.decode()
-datas.append(data)
-print(datas)
-
-studentDatas = []
 class start:
     def __init__(self):
         print('''          _____                    _____                    _____                    _____                            _____                    _____                    _____          
@@ -56,6 +50,7 @@ class start:
         global grade
         global school
         global SID
+        studentDatas = []
         for i in range(4):
             Data = s.recv(1024)
             studentDatas.append(Data.decode())
@@ -76,6 +71,7 @@ class welcome:
             reading()
         elif self.initmode == "w":
             writing()
+
 class finish:
     def __init__(self):
         self.report = input("System: Type 'y' to get the report. ")
@@ -102,8 +98,17 @@ class reading:
         s.sendall(self.p.encode())
         self.q = (self.location + self.no + "\\" + self.no+ ".json")
         s.sendall(self.q.encode())
-        self.fp = open(self.p, "r", encoding="utf-8")
-        self.fq = open(self.q, "r", encoding="utf-8")
+        self.receive()
+    
+    def receive(self):
+        paperDatas = []
+        print("System: Waiting to receive paper...")
+        for i in range(2):
+            data = s.recv(1024)
+            paperDatas.append(data.decode())
+        self.text = paperDatas[1]
+        self.questBank = paperDatas[2]
+        self.questBank = json.loads(self.questBank)
         self.question = []
         self.answer = []
         self.advise = []
@@ -111,9 +116,7 @@ class reading:
         self.type = []
         self.keypoint = []
         self.choice = []
-        with open(self.q,encoding="utf-8") as f:
-            self.data = json.load(f)
-        for i in self.data:
+        for i in self.questBank:
             self.question.append(i['question'])
             self.answer.append(i['answer'])
             self.advise.append(i['advise'])
@@ -131,7 +134,7 @@ class reading:
         self.passage()
         self.questions()
     def passage(self):
-        print(self.fp.read())
+        print(self.text)
     def questions(self):
         self.score = 0
         self.result = []
@@ -180,7 +183,7 @@ class reading:
             self.grade = "D"
         elif (self.score / sum(self.prescore)) > 0.3:
             self.grade = "E"
-        elif (self.score / sum(self.prescore)) > 0.2:
+        else:
             self.grade = "F"
         print("score: " + str(self.score) + "/"  + str(sum(self.prescore)))
         if self.result == []:
