@@ -49,7 +49,10 @@ Papers = {
         },
         "Assignment":{
             "Paper1":None
-        }
+        },
+        "Self practice":{
+            "Paper1":None
+        },
     }
 }
 
