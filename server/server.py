@@ -107,7 +107,8 @@ class server:
                 for m in matches:
                     wordNo = str(len(writing[:m.errorLength+m.offset].split(' ')))
                     mistakes.append(m.ruleIssueType+' in '+wordNo+['th','st','nd','rd',*['th']*7][int(wordNo[-1])]+" word: "+m.message)
-                    m.replacements = ["[color=e0483a]"+m.replacements[0]+'[/color]']
+                    if len(m.replacements):
+                        m.replacements = ["[color=e0483a]"+m.replacements[0]+'[/color]'+' ']
                 correction = language_tool_python.utils.correct(writing,matches)
                 self.sendClient(c,json.dumps({
                     "mistakes":mistakes,
