@@ -94,7 +94,7 @@ class reading:
         self.mode = input("Mock paper/Assignment/Self practice?(m/a/s)")
         self.modeLower = self.mode.lower()
         self.no = input("Which passage you want to do?(1/2)")
-        sendServer({'task':'getpaper',"paperType":{'m':'Mock','a':'Assignment'}[self.mode],"paper":str(self.no)})
+        sendServer({'task':'getpaper',"paperType":{'m':'Mock','a':'Assignment','s':'Self practice'}[self.mode],"paper":str(self.no)})
         self.receive()
     
     def receive(self):

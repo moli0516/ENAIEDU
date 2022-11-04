@@ -38,6 +38,9 @@ Papers = {
         },
         'Assignment':{
             "Paper1":'1'
+        },
+        'Self practice':{
+            "Paper1":'1'
         }
     },
     "Writing":{
@@ -229,7 +232,7 @@ class questionScreen(Screen):
         else: 
             def startQuestion(*a):
                 data = socketClient.send({'task':'getpaper',"paperType":self.ptype,"paper":Papers[self.ttype][self.ptype][self.paper]})
-                if not data: 
+                if not data:
                     waitingPaperLabel.text = "Error: Cant connect to server"
                 else:
                     self.remove_widget(waitingPaperLabel)
