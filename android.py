@@ -16,11 +16,14 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
+from kivymd.toast import toast
 
 Window.clearcolor = (1,1,1,1)
 Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
 Window.softinput_mode = "below_target"
 
+StudentName = None
+Sid = None
 
 Builder.load_string("""
 <Label>
@@ -52,31 +55,36 @@ screenManager = ScreenManager()
 class client():
     def __init__(self):
         super().__init__()
-        self.serverIP = '123.202.82.205'
         self.serverPort = 1234
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.connect()
-    def connect(self):
+        self.connected = False
+    def connect(self,serverIP='123.202.82.205'):
         try:
-            self.socket.connect((self.serverIP,self.serverPort))
+            if not self.connected: self.socket.connect((serverIP,self.serverPort))
+            self.connected = True
+            return True
         except:
-            print('Server offline')
+            print(e)
+            showToast("Failed to connect server")
+            return False
     def send(self,data):
         try:
             sended = self.socket.send(json.dumps(data).encode('utf-8')+b'\r\nSocketEnd\r\n')
-            print(sended)
             if not sended:return False
             return self.recv()
         except:
             pass
     def recv(self):
-        data = b""
-        while True:
-            d = self.socket.recv(2)
-            data += d
-            if data.endswith(b'\r\nSocketEnd\r\n'):break
-        print(data)
-        return json.loads(data.decode('utf-8')[:-13])
+        try:
+            data = b""
+            while True:
+                d = self.socket.recv(2)
+                data += d
+                if data.endswith(b'\r\nSocketEnd\r\n'):break
+            return json.loads(data.decode('utf-8')[:-13])
+        except Exception as e:
+            print(e)
+            return False
     def close(self,*a):
         self.socket.close()
 
@@ -96,6 +104,10 @@ def renderBG(elem,value,radius=None):
         Color(elem.bgColor[0]/255,elem.bgColor[1]/255,elem.bgColor[2]/255,elem.bgColor[3])
         RoundedRectangle(pos=elem.pos,size=elem.size,radius=radius) if radius else Rectangle(pos=elem.pos,size=elem.size)
 
+def showToast(text,duration=2.5):
+    if platform == 'android': toast(text=text,gravity=80,length_long=duration)
+    else: toast(text=text,duration=duration)
+
 def disableTextBox(box,value):
     box.text = value
 
@@ -105,6 +117,51 @@ class menuScreen(Screen):
         self.titleLabel = Label(text='[b]ENAI EDU[/b]',font_size='30dp',pos_hint={'x':.0,'y':.9},size_hint=(1,.1))#,background_color=(1,1,1,1)=
         self.titleLabel.bgColor = (42,196,240,.8)
         self.titleLabel.bind(pos=renderBG)
+        self.renderLogin()
+    def renderLogin(self):
+        self.add_widget(self.titleLabel)
+        loginBG = Label(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
+        loginBG.bgColor = (127,127,127,.3)
+        loginBG.bind(pos=lambda a,b:renderBG(a,b,[20]))
+        serverIPLabel = Label(text="Server IP:",pos_hint={'x':-.2,'y':.15})
+        serverIPBox = TextInput(text="123.202.82.205",size_hint=(.6,.05),pos_hint={'x':.2,'y':.58})
+        sidLabel = Label(text="Students ID:",pos_hint={'x':-.2,'y':.06})
+        sidBox = TextInput(hint_text="220000000",size_hint=(.6,.05),pos_hint={'x':.2,'y':.49})
+        passwLabel = Label(text="password:",pos_hint={'x':-.2,'y':-.03})
+        passwBox = TextInput(size_hint=(.6,.05),pos_hint={'x':.2,'y':.40})
+        loginBtn = Button(text="Login",size_hint=(.2,.05),pos_hint={'x':.6,'y':.3})
+        def onLoginBtnPressed(btn):
+            btn.disabled = True
+            Clock.schedule_once(lambda *a:self.login(btn,serverIPBox.text,sidBox.text,passwBox.text),.1)
+        loginBtn.bind(on_press=onLoginBtnPressed)
+        self.add_widget(loginBG)
+        self.add_widget(serverIPLabel)
+        self.add_widget(serverIPBox)
+        self.add_widget(sidLabel)
+        self.add_widget(sidBox)
+        self.add_widget(passwLabel)
+        self.add_widget(passwBox)
+        self.add_widget(loginBtn)
+    def login(self,btn,serverIP,sid,passw):
+        global StudentName,Sid
+        try:
+            socket.gethostbyaddr(serverIP)
+        except:
+            btn.disabled = False
+            return showToast(text="Incorrect Server IP")
+        if not sid or not passw:
+            btn.disabled = False
+            return showToast(text="Missing studentID or password")
+        if not socketClient.connect(serverIP):
+            btn.disabled = False
+            return #Connection Failed
+        data = socketClient.send({'task':'login','sid':sid,'passw':passw})
+        if not data or not data['state']:
+            btn.disabled = False
+            return showToast(text="Incorrect studentID or password")
+        showToast('Login successful')
+        StudentName = data['name']
+        Sid = sid
         self.renderMenu()
     def renderMenu(self):
         self.clear_widgets()
@@ -174,14 +231,15 @@ class questionScreen(Screen):
                 data = socketClient.send({'task':'getpaper',"paperType":self.ptype,"paper":Papers[self.ttype][self.ptype][self.paper]})
                 if not data: 
                     waitingPaperLabel.text = "Error: Cant connect to server"
-                    print('no')
                 else:
+                    self.remove_widget(waitingPaperLabel)
                     self.paperText = data['text']
                     self.questions = data['questions']
                     self.renderReadingScreen()
             Clock.schedule_once(startQuestion,.5)
     def renderReadingScreen(self):
         self.textBox = TextInput(text=self.paperText,font_size='20dp',pos_hint={'x':.1,'y':.45},size_hint=(.8,.45))
+        self.textBox.do_cursor_movement("cursor_home",True)
         self.textBox.bind(text=lambda a,b:disableTextBox(a,self.paperText))
         self.previousBtn = Button(text="<=Previous",font_size='20dp',pos_hint={'x':.15,'y':.05},size_hint=(.18,.08),disabled=True)
         self.nextBtn = Button(text="Next=>",font_size='20dp',pos_hint={'x':.67,'y':.05},size_hint=(.18,.08),disabled=True)
@@ -269,6 +327,7 @@ class questionScreen(Screen):
         elif score / pscore > 0.5: grade = "B"
         elif score / pscore > 0.4: grade = "C"
         else: grade = "D"
+        self.sendReport(grade,score,pscore)
         self.showResult(grade,advises)
     def resultPageResizeText(self,text):
         t = ""
@@ -277,7 +336,7 @@ class questionScreen(Screen):
         for w in words:
             added = count + len(w)
             count = added if added <=20 else 0
-            t += ('\n'+w if added >20 and w != words[-1] else w+' ')
+            t += ('\n'+w+' ' if added >20 and w != words[-1] else w+' ')
         return t
     def showResult(self,grade,showText,writing=None,correction=None):
         self.clear_widgets()
@@ -326,8 +385,14 @@ class questionScreen(Screen):
                 correctionLabel.height = len(text.split('\n'))*18
                 gridBox.add_widget(correctionLabel)
             scrollBox1.add_widget(gridBox)
-            mistakesBtn = Button(text="Mistakes",font_size='17dp',pos_hint={'x':.25,'y':.5},size_hint=(.19,.05))
-            correctionBtn = Button(text="Correction",font_size='17dp',pos_hint={'x':.57,'y':.5},size_hint=(.19,.05))
+            mistakesBtn = Button(text="Mistakes",font_size='17dp',pos_hint={'x':.25,'y':.5},size_hint=(.19,.05),disabled_color=(0,0,0,1))
+            mistakesBtn.disabled = True
+            correctionBtn = Button(text="Suggestion",font_size='17dp',pos_hint={'x':.57,'y':.5},size_hint=(.19,.05),disabled_color=(0,0,0,1))
+            def changeBtnState(btn,btn1):
+                btn.disabled = True
+                btn1.disabled = False
+            mistakesBtn.bind(on_press=lambda a:changeBtnState(a,correctionBtn))
+            correctionBtn.bind(on_press=lambda a:changeBtnState(a,mistakesBtn))
             pages = [scrollBox,scrollBox1]
             def changePage(btn,page):
                 self.remove_widget(pages[page])
@@ -360,6 +425,8 @@ class questionScreen(Screen):
             print(data['correction'])
             self.showResult(None,data['mistakes'],writing,data['correction'])
         Clock.schedule_once(sendWriting,1)
+    def sendReport(self,grade,score,pscore):
+        socketClient.send({'task':'sendreport',"sid":Sid,"name":StudentName,"grade":grade,"score":str(score)+'/'+str(pscore)})
     def renderScoreBG(self,label,value):
         label.canvas.before.clear()
         with label.canvas.before:

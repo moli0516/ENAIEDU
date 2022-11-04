@@ -12,10 +12,19 @@ import heapq
 tool = language_tool_python.LanguageTool('en-US')
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(("127.0.0.1",1234))
-s.send(b"hi, nigger")
-data = s.recv(1024)
-data = data.decode()
+s.connect(("123.202.82.205",1234))
+
+def sendServer(data):
+    s.send(json.dumps(data).encode('utf-8')+b'\r\nSocketEnd\r\n')
+
+def recvServer():
+    data = b""
+    while True:
+        d = s.recv(2)
+        data += d
+        if data.endswith(b'\r\nSocketEnd\r\n'):break
+    return json.loads(data.decode('utf-8')[:-13])
+
 class start:
     def __init__(self):
         print('''          _____                    _____                    _____                    _____                            _____                    _____                    _____          
@@ -40,10 +49,8 @@ class start:
         \::/    /                \::/    /                \::/    /                \::/    /                        \::/    /                \::/____/                \::/____/        
          \/____/                  \/____/                  \/____/                  \/____/                          \/____/                  ~~                       ~~              
                                                                                                                                                                                        ''')
-        self.username = "ID " + input("UserID: ")
-        s.sendall(self.username.encode())
-        self.password = "passw " + input("Password:")
-        s.sendall(self.password.encode())
+        self.sid = input("UserID: ")
+        self.password = input("Password:")
         self.login()
 
     def login(self):
@@ -51,14 +58,12 @@ class start:
         global grade
         global school
         global SID
-        studentDatas = []
-        for i in range(4):
-            Data = s.recv(1024)
-            studentDatas.append(Data.decode())
-        name = studentDatas[0]
-        grade = studentDatas[1]
-        school = studentDatas[2]
-        SID = studentDatas[3]
+        sendServer({'task':'login','sid':self.sid,'passw':self.password})
+        data = recvServer()
+        name = data['name']
+        grade = data['grade']
+        school = data['school']
+        SID = self.sid
         if name:
             print("Welcome! " + str(name))
             welcome()
@@ -74,43 +79,29 @@ class welcome:
             writing()
 
 class finish:
-    def __init__(self):
+    def __init__(self,grade,score,pscore):
         self.report = input("System: Type 'y' to get the report. ")
         if self.report:
-            self.report1 = "report"
-            s.sendall(self.report1.encode())
+            sendServer({'task':'sendreport',"sid":SID,"name":name,"grade":grade,"score":str(score)+'/'+str(pscore)})
         self.initmode = input("Writing or reading?(w/r)")
         self.initmode = self.initmode.lower()
         if self.initmode == "r":
             reading()
+        else:writing()
         
 class reading:
     def __init__(self):
         self.mode = input("Mock paper/Assignment/Self practice?(m/a/s)")
         self.modeLower = self.mode.lower()
-        if self.modeLower == "m":
-            self.location = "D:\git-repos\ENAIEDU\server\question\m\\"
-        elif self.modeLower == "a":
-            self.location = "D:\git-repos\ENAIEDU\server\question\a\\"
-        elif self.modeLower == "p":
-            self.location = "D:\git-repos\ENAIEDU\server\question\p\\"
         self.no = input("Which passage you want to do?(1/2)")
-        self.p = (self.location + self.no + "\\" + self.no+ ".txt")
-        s.sendall(self.p.encode())
-        self.q = (self.location + self.no + "\\" + self.no+ ".json")
-        s.sendall(self.q.encode())
+        sendServer({'task':'getpaper',"paperType":{'m':'Mock','a':'Assignment'}[self.mode],"paper":str(self.no)})
         self.receive()
     
     def receive(self):
-        paperDatas = []
         print("System: Waiting to receive paper...")
-        for i in range(2):
-            data = s.recv(4096)
-            paperDatas.append(data.decode())
-            time.sleep(1)
-        self.text = paperDatas[0]
-        self.questBank = paperDatas[1]
-        self.questBank = json.loads(self.questBank)
+        paperDatas = recvServer()
+        self.text = paperDatas['text']
+        self.questBank = paperDatas['questions']
         self.question = []
         self.answer = []
         self.advise = []
@@ -188,38 +179,13 @@ class reading:
         else:
             self.grade = "F"
         print("score: " + str(self.score) + "/"  + str(sum(self.prescore)))
-        if self.result == []:
-            self.report1 = ("SID: " + SID)
-            self.report2 = ("Name: " + name)
-            self.report3 = ("Grade: " + self.grade)
-            self.report4 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
-            s.sendall(self.report1.encode())
-            time.sleep(0.5)
-            s.sendall(self.report2.encode())
-            time.sleep(0.5)
-            s.sendall(self.report3.encode())
-            time.sleep(0.5)
-            s.sendall(self.report4.encode())
-            print("----------------------------------------------------------------------------------")
-            finish()
-        else:
+        if self.result != []:
             print("advice:")
             for i in range(len(self.result)):
                 self.index = str(i+1)
                 print(self.index + ". " + self.result[i])
-            self.report1 = ("SID: " + SID)
-            self.report2 = ("Name: " + name)
-            self.report3 = ("Grade: " + self.grade)
-            self.report4 = ("Score: " + str(self.score) + "/"  + str(sum(self.prescore)))
-            s.sendall(self.report1.encode())
-            time.sleep(0.5)
-            s.sendall(self.report2.encode())
-            time.sleep(0.5)
-            s.sendall(self.report3.encode())
-            time.sleep(0.5)
-            s.sendall(self.report4.encode())
-            print("----------------------------------------------------------------------------------")
-            finish()
+        print("----------------------------------------------------------------------------------")
+        finish(self.grade,self.score,self.prescore)
             
     def quit(self):
         print("System: Exiting...")
