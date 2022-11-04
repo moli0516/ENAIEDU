@@ -61,9 +61,9 @@ class client():
         self.serverPort = 1234
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.connected = False
-    def connect(self,serverIP='123.202.82.205'):
+    def connect(self):
         try:
-            if not self.connected: self.socket.connect((serverIP,self.serverPort))
+            if not self.connected: self.socket.connect(('123.202.82.205',self.serverPort))
             self.connected = True
             return True
         except:
@@ -122,34 +122,30 @@ class menuScreen(Screen):
         self.renderLogin()
     def renderLogin(self):
         self.add_widget(self.titleLabel)
-        loginBG = Label(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
+        loginBG = Label(pos_hint={'x':.15,'y':0.4},size_hint=(.7,.3))
         loginBG.bgColor = (127,127,127,.3)
         loginBG.bind(pos=lambda a,b:renderBG(a,b,[20]))
-        serverIPLabel = Label(text="Server IP:",pos_hint={'x':-.2,'y':.15})
-        serverIPBox = TextInput(text="123.202.82.205",size_hint=(.6,.05),pos_hint={'x':.2,'y':.58},multiline=False)
-        sidLabel = Label(text="Students ID:",pos_hint={'x':-.2,'y':.06})
-        sidBox = TextInput(hint_text="220000000",size_hint=(.6,.05),pos_hint={'x':.2,'y':.49},multiline=False)
-        passwLabel = Label(text="password:",pos_hint={'x':-.2,'y':-.03})
-        passwBox = TextInput(size_hint=(.6,.05),pos_hint={'x':.2,'y':.40},multiline=False)
-        loginBtn = Button(text="Login",size_hint=(.2,.05),pos_hint={'x':.6,'y':.3})
+        sidLabel = Label(text="Students ID:",pos_hint={'x':-.2,'y':.16})
+        sidBox = TextInput(hint_text="220000000",size_hint=(.6,.05),pos_hint={'x':.2,'y':.59},multiline=False)
+        passwLabel = Label(text="password:",pos_hint={'x':-.2,'y':.07})
+        passwBox = TextInput(size_hint=(.6,.05),pos_hint={'x':.2,'y':.50},multiline=False)
+        loginBtn = Button(text="Login",size_hint=(.2,.05),pos_hint={'x':.6,'y':.4})
         def onLoginBtnPressed(btn):
             btn.disabled = True
-            Clock.schedule_once(lambda *a:self.login(btn,serverIPBox.text,sidBox.text,passwBox.text),.1)
+            Clock.schedule_once(lambda *a:self.login(btn,sidBox.text,passwBox.text),.1)
         loginBtn.bind(on_press=onLoginBtnPressed)
         self.add_widget(loginBG)
-        self.add_widget(serverIPLabel)
-        self.add_widget(serverIPBox)
         self.add_widget(sidLabel)
         self.add_widget(sidBox)
         self.add_widget(passwLabel)
         self.add_widget(passwBox)
         self.add_widget(loginBtn)
-    def login(self,btn,serverIP,sid,passw):
+    def login(self,btn,sid,passw):
         global StudentName,Sid
         if not sid or not passw:
             btn.disabled = False
             return showToast(text="Missing studentID or password")
-        if not socketClient.connect(serverIP):
+        if not socketClient.connect():
             btn.disabled = False
             return showToast(text="Incorrect Server IP or server offline")
         data = socketClient.send({'task':'login','sid':sid,'passw':passw})
@@ -181,14 +177,14 @@ class menuScreen(Screen):
         self.add_widget(self.titleLabel)
         gridBox = GridLayout(cols=1,spacing=1,size_hint_y=None)
         gridBox.bind(minimum_height=gridBox.setter('height'))
-        scrollBox = ScrollView(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.38))
-        scrollBoxBG = Label(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.38))
+        scrollBox = ScrollView(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
+        scrollBoxBG = Label(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
         scrollBoxBG.bgColor = (127,127,127,.3)
         scrollBoxBG.bind(pos=lambda a,b:renderBG(a,b,[20]))
         p = Papers[ttype]
         if ptype: p=p[ptype]
         for t in p:
-            btn = Button(text=t,font_size="20dp",size_hint=(.7,None),height=self.height*.2)
+            btn = Button(text=t,font_size="20dp",size_hint=(.7,None),height=self.height*.18)
             btn.ttype = ttype
             btn.ptype = ptype if ptype else t
             btn.paper = t if ptype else None
