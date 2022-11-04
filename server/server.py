@@ -15,7 +15,8 @@ import os
 
 paperPaths = {
     'Mock':'m',
-    'Assignment':'a'
+    'Assignment':'a',
+    'Self practice':'s'
 }
 currentDir = os.path.dirname(os.path.abspath(__file__))
 
