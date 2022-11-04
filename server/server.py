@@ -10,6 +10,7 @@ import os
 #   onGetAvaliablePapers: {"task":"getallpaper"}
 #   onGetPaper: {"task":"getpaper","paperType":"mock","paper":"1"}
 #   onCalculateWritingResult: {"task":"calcwriting","writing":"Hello! World!"}
+#   onSendReport: {"task":"sendreport","sid":"000000000","name":"abc","grade":"A","score":'5/5'}
 #
 
 paperPaths = {
@@ -52,7 +53,7 @@ class server:
                 sdata = sdata.decode()[:-13] #remove b'\r\nSocketEnd\r\n'
                 data = json.loads(sdata)
             except: #user might disconnected
-                print('None')
+                print('Disconnected')
                 c.close()
                 break
             if data['task'] == "login":
@@ -61,7 +62,7 @@ class server:
                 NAME = []
                 SCHOOL = []
                 GRADE = []
-                with open(currentDir+"\\server\\users\\user.json","r",encoding="utf-8") as f:
+                with open(currentDir+"\\users\\user.json","r",encoding="utf-8") as f:
                     userData = json.load(f)
                 for i in userData:
                     SID.append(i['SID'])
@@ -79,15 +80,18 @@ class server:
                     i = SID.index(inputSID)
                     if str(inputPassw) == str(PASSW[i]):
                         print("login success")
-                        self.sendClient(json.dumps({
+                        self.sendClient(c,json.dumps({
+                            "state":1,
                             "name":NAME[i],
                             "grade":GRADE[i],
                             "school":SCHOOL[i]
                         }))
                     else:
                         print("Wrong Password")
+                        self.sendClient(c,json.dumps({"state":0}))
                 else:
                     print("Wrong ID")
+                    self.sendClient(c,json.dumps({"state":0}))
             if data['task'] == "getpaper":
                 paperPath = currentDir+"\\question\\"+paperPaths[data['paperType']]+"\\"+data['paper']+"\\"+data['paper']
                 passage = open(paperPath+'.txt', 'r', encoding="utf-8")
@@ -106,32 +110,21 @@ class server:
                 matches = grammarChecker.check(writing)
                 for m in matches:
                     wordNo = str(len(writing[:m.errorLength+m.offset].split(' ')))
-                    mistakes.append(m.ruleIssueType+' in '+wordNo+['th','st','nd','rd',*['th']*7][int(wordNo[-1])]+" word: "+m.message)
                     if len(m.replacements):
-                        m.replacements = ["[color=e0483a]"+m.replacements[0]+'[/color]'+' ']
+                        mistakes.append(m.ruleIssueType+' in '+wordNo+['th','st','nd','rd',*['th']*7][int(wordNo[-1])]+" word: '"+writing[m.offset:m.errorLength+m.offset]+"' may change to '"+m.replacements[0]+"'")
+                        m.replacements = ["[color=e0483a]"+writing[m.offset:m.errorLength+m.offset]+"[/color]|[color=58e02b]"+m.replacements[0]+'[/color]'+' ']
                 correction = language_tool_python.utils.correct(writing,matches)
                 self.sendClient(c,json.dumps({
                     "mistakes":mistakes,
                     "correction":correction
                 }))
-            if data == "report":
-                continue
-                repDict = str(datas[5])[5:]
-                parDict = "D:/git-repos/ENAIEDU/server/report/"
-                path = os.path.join(parDict, repDict)
-                try:
-                    os.mkdir(path)
-                except FileExistsError:
-                    pass
+            if data['task'] == "sendreport":
+                path = currentDir+"\\report\\"+data['sid']
+                if not os.path.exists(path): os.mkdir(path)
                 with open(path + "\\report.txt", 'w') as f:
-                    f.write(datas[5])
-                    f.write('\n')
-                    f.write(datas[6])
-                    f.write('\n')
-                    f.write(datas[7])
-                    f.write('\n')
-                    f.write(datas[8])
-                    f.write('\n')
+                    f.write("SID: "+data['sid']+"\nName: "+data['name']+"\nGrade: "+data['grade']+"\nScore: "+data['score']+'\n')
+                    f.close()
+                self.sendClient(c,json.dumps({"state":1}))
             else:
                 pass
 
