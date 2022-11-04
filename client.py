@@ -185,7 +185,7 @@ class reading:
                 self.index = str(i+1)
                 print(self.index + ". " + self.result[i])
         print("----------------------------------------------------------------------------------")
-        finish(self.grade,self.score,self.prescore)
+        finish(self.grade,self.score,sum(self.prescore))
             
     def quit(self):
         print("System: Exiting...")

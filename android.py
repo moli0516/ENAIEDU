@@ -67,7 +67,6 @@ class client():
             self.connected = True
             return True
         except:
-            print(e)
             showToast("Failed to connect server")
             return False
     def send(self,data):
@@ -99,7 +98,7 @@ def word_tokenize(string):# Cant import nltk word_tokenize in android qwq
         if c in "~!@#$%^&*()_+{}|:\"<>?`-=[]\;',./" and res[-1] != '': res.extend([c,''])
         elif c == ' ':res.append('') if res[-1] != '' else ''
         else:res[-1] += c
-    return res[:(-1 if res[-1] == '' else 0)]
+    return res[:-1] if res[-1] == '' else res
 
 def renderBG(elem,value,radius=None):
     elem.canvas.before.clear()
@@ -127,11 +126,11 @@ class menuScreen(Screen):
         loginBG.bgColor = (127,127,127,.3)
         loginBG.bind(pos=lambda a,b:renderBG(a,b,[20]))
         serverIPLabel = Label(text="Server IP:",pos_hint={'x':-.2,'y':.15})
-        serverIPBox = TextInput(text="123.202.82.205",size_hint=(.6,.05),pos_hint={'x':.2,'y':.58})
+        serverIPBox = TextInput(text="123.202.82.205",size_hint=(.6,.05),pos_hint={'x':.2,'y':.58},multiline=False)
         sidLabel = Label(text="Students ID:",pos_hint={'x':-.2,'y':.06})
-        sidBox = TextInput(hint_text="220000000",size_hint=(.6,.05),pos_hint={'x':.2,'y':.49})
+        sidBox = TextInput(hint_text="220000000",size_hint=(.6,.05),pos_hint={'x':.2,'y':.49},multiline=False)
         passwLabel = Label(text="password:",pos_hint={'x':-.2,'y':-.03})
-        passwBox = TextInput(size_hint=(.6,.05),pos_hint={'x':.2,'y':.40})
+        passwBox = TextInput(size_hint=(.6,.05),pos_hint={'x':.2,'y':.40},multiline=False)
         loginBtn = Button(text="Login",size_hint=(.2,.05),pos_hint={'x':.6,'y':.3})
         def onLoginBtnPressed(btn):
             btn.disabled = True
@@ -147,17 +146,12 @@ class menuScreen(Screen):
         self.add_widget(loginBtn)
     def login(self,btn,serverIP,sid,passw):
         global StudentName,Sid
-        try:
-            socket.gethostbyaddr(serverIP)
-        except:
-            btn.disabled = False
-            return showToast(text="Incorrect Server IP")
         if not sid or not passw:
             btn.disabled = False
             return showToast(text="Missing studentID or password")
         if not socketClient.connect(serverIP):
             btn.disabled = False
-            return #Connection Failed
+            return showToast(text="Incorrect Server IP or server offline")
         data = socketClient.send({'task':'login','sid':sid,'passw':passw})
         if not data or not data['state']:
             btn.disabled = False
@@ -321,6 +315,7 @@ class questionScreen(Screen):
                 addScore = int(question['score']) if ans == question['answer'] else 0
             elif question['type'] == "long":
                 reqKeypoint = question['keypoint']
+                print(word_tokenize(ans),ans)
                 for word in word_tokenize(ans):
                     if word in reqKeypoint: #keypoint found
                         addScore += 1
