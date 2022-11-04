@@ -181,8 +181,8 @@ class menuScreen(Screen):
         self.add_widget(self.titleLabel)
         gridBox = GridLayout(cols=1,spacing=1,size_hint_y=None)
         gridBox.bind(minimum_height=gridBox.setter('height'))
-        scrollBox = ScrollView(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
-        scrollBoxBG = Label(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
+        scrollBox = ScrollView(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.38))
+        scrollBoxBG = Label(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.38))
         scrollBoxBG.bgColor = (127,127,127,.3)
         scrollBoxBG.bind(pos=lambda a,b:renderBG(a,b,[20]))
         p = Papers[ttype]
