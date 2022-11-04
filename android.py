@@ -1,8 +1,7 @@
 __version__ = "1.0.0"
-import kivy,language_tool_python,threading
+import kivy,socket,json,time
 from kivymd.app import MDApp
-from kivy.clock import ClockBase
-from functools import partial
+from kivy.clock import Clock
 from kivy.utils import platform
 from kivy.lang import Builder
 from kivy.core.window import Window
@@ -17,11 +16,11 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-#from android.permissions import request_permissions, Permission
-
-grammarChecker = language_tool_python.LanguageTool('en-US')
 
 Window.clearcolor = (1,1,1,1)
+Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
+Window.softinput_mode = "below_target"
+
 
 Builder.load_string("""
 <Label>
@@ -32,157 +31,10 @@ Builder.load_string("""
 Papers = {
     'Reading':{
         'Mock':{
-            "Paper1":{
-                'text':"""[1] When Helen Keller was almost two years old, she got sick with a high fever.
-Because of that, she could not see or hear. Soon, she could not talk. Her parents
-were so sad.
-[2] When Helen was seven years old, a teacher called Anne Sullivan came to see
-Helen’s parents. Helen’s mum told Anne, “Helen can’t see or hear for five years. She
-is dumb too so she can’t tell us what she wants or how she feels. She has had many
-teachers before but they couldn’t understand her and Helen was like a wild animal in
-class. One by one they left.”
-[3] The next morning, Anne had breakfast with Helen’s family. Helen was walking
-around the table and eating everyone’s food with her hands. Anne said to Helen’s
-parents, “I will teach Helen right now but I need a private place.”
-[4] The servant took Anne and Helen to the nearby house and she left. At the next
-meal at the house, Helen ate very noisily and messily again. So, Anne took away
-Helen’s food. Finally, Helen sat down at the table. Anne returned Helen’s plate of
-food. But Anne did not let her eat until Helen sat still and used a spoon.
-[5] A few days later, Helen and Anne came to her parents’ home for dinner. Helen
-could sit still at the table and eat with a spoon. They were so surprised.
-“Unbelievable! I have never thought Helen would learn again!” Helen’s mum
-cried.""",
-                'questions':[
-                    {
-                        "question": "1. Chloe is reading a __________. ",
-                        "answer": "a",
-                        "advise": "You can't get the type of article",
-                        "score": "1",
-                        "type": "MC",
-                        "keypoint": [" "],
-                        "choice": ["A. biography",
-                                "B. poem", 
-                                "C. notice", 
-                                "D. report"]
-                    },
-                    {
-                        "question": "2. Which of the following was true about Helen Keller? ",
-                        "answer": "b",
-                        "advise": "You can't understand what happend in the article",
-                        "score": "1",
-                        "type": "MC",
-                        "keypoint": [" "],
-                        "choice": ["A. She was blind when she was born.",
-                                "B. Anne was her only teacher.",
-                                "C. She learnt how to eat properly from her first teacher.",
-                                "D. She could not see, hear or talk when she met Anne Sullivan."]
-                    },
-                    {
-                        "question": "3 In line 17 , what does ‘they’ refer to? ",
-                        "answer": "the teachers",
-                        "advise": "You can't find out the refer thing",
-                        "score": "1",
-                        "type": "short",
-                        "keypoint": [" "],
-                        "choice": [" "]
-                    },
-                    {
-                        "question": "4. According to Paragraph 4, what did Anne want Helen to do when eating? ",
-                        "answer": "",
-                        "advise": "You can't summerise the article",
-                        "score": "2",
-                        "type": "long",
-                        "keypoint": [
-                            "sit", "still"
-                        ],
-                        "choice": [" "]
-                    }
-                ]
-            }
+            "Paper1":'1'
         },
         'Assignment':{
-            "Paper1":{
-                'text':"""[1] Jesse Owens was born on 12th September 1913. He is
-known for winning four Olympic gold medals in track and
-field events. In 1935, Jesse took part in a total of 42 different sporting events and
-won them all. This amazing achievement earned him a place at the 1936
-Olympics in Berlin, Germany. During the 1936 Olympics, Germany was being 
-ruled by Adolf Hitler. After his success, Jesse Owens was called a hero by many people.
-However, lots of people believe that Jesse’s success was not
-what Hitler wanted to happen. This is because he wanted to
-use the Olympics to show how his group of white athletes
-were better than everyone else and Jesse proved him wrong.
-Today, there is a school in Berlin that has been named
-after Jesse.
-[2] Serena Williams is a famous tennis player who was born on 26th September
-1981. In total, she has won more Grand Slam tennis tournaments than any
-other player. Serena’s father started teaching her how to play tennis when she was three
-years old. By the time she was ten, Serena was the number one tennis
-player in the ten and under division. Serena has also won a total of four Olympic gold medals.
-Three of these have been in doubles tournaments alongside
-her sister, Venus. Throughout her career, Serena has suffered
-many injuries. Each time, she has returned to the game and proven what
-an incredible, talented player she is.
-[3] Michael Jordan was born on 17th February 1963 and is a
-successful basketball player. Throughout his career, he
-won a total of six NBA (National Basketball Association)
-championships with his team. When Michael was at university, 
-he joined the basketballteam. In 1982, they won the championship and, a few
-years later, Michael joined the NBA team, the Chicago Bulls.
-Michael continued learning while playing basketball and
-earned a degree in geography in 1985. Michael is 1.98 metres tall and can jump 
-over a metre straight up into the air!
-Before retiring in 2003, Michael played in 1,072 NBA games.
-[4] Muhammad Ali was a successful boxer who has a total of 56 victories. He
-was born on 17th January 1942 and was named Cassius Marcellus Clay Jr.
-When he was 12, Muhammad’s bike was stolen. The police officer who
-helped Muhammad also trained young boxers in his spare time. He invited
-him along to the gym to join in and, by 1954, Muhammad had won his first
-boxing match. In April 1967, Muhammad was summoned to join the military. He refused
-and openly said that he did not support the Vietnam War. This objection led
-to him being found guilty of refusing to serve in the military,
-which was against the law. While Muhammad argued against
-the decision, he was unable to box and missed over three
-years of competitions.
-In 1998, Muhammad was given an important award that
-celebrated his work to promote peace.""",
-                'questions':[
-                    {
-                        "question": "Who was born on 17th February 1963? ",
-                        "answer": "michael jordan",
-                        "advise": "You can't recongize the name",
-                        "score": "2",
-                        "type": "short",
-                        "keypoint": [" "]
-                    },
-                    {
-                        "question": "Where were the 1936 Olympics held? ",
-                        "answer": "germany",
-                        "advise": "You can't get the properly country name",
-                        "score": "2",
-                        "type": "short",
-                        "keypoint": [" "]
-                    },
-                    {
-                        "question": "Look at the section on Para 4. Find and copy one word that means the same as called. ",
-                        "answer": "summoned",
-                        "advise": "You can't find out the correct vocab",
-                        "score": "2",
-                        "type": "short",
-                        "keypoint": [" "]
-                    },
-                    {
-                        "question": "Summarise what you have learnt about Michael Jordan using 20 words or fewer. ",
-                        "answer": "",
-                        "advise": "You can't summerise the article",
-                        "score": "4",
-                        "type": "long",
-                        "keypoint": [
-                            "good", "strong", "gay", "black"
-                        ]
-                    }
-                ]
-            }
+            "Paper1":'1'
         }
     },
     "Writing":{
@@ -196,6 +48,38 @@ celebrated his work to promote peace.""",
 }
 
 screenManager = ScreenManager()
+
+class client():
+    def __init__(self):
+        super().__init__()
+        self.serverIP = '123.202.82.205'
+        self.serverPort = 1234
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.connect()
+    def connect(self):
+        try:
+            self.socket.connect((self.serverIP,self.serverPort))
+        except:
+            print('Server offline')
+    def send(self,data):
+        try:
+            sended = self.socket.send(json.dumps(data).encode('utf-8')+b'\r\nSocketEnd\r\n')
+            print(sended)
+            if not sended:return False
+            return self.recv()
+        except:
+            pass
+    def recv(self):
+        data = b""
+        while True:
+            d = self.socket.recv(2)
+            data += d
+            if data.endswith(b'\r\nSocketEnd\r\n'):break
+        print(data)
+        return json.loads(data.decode('utf-8')[:-13])
+    def close(self,*a):
+        self.socket.close()
+
 
 def word_tokenize(string):# Cant import nltk word_tokenize in android qwq
     res = ['']
@@ -211,6 +95,9 @@ def renderBG(elem,value,radius=None):
     with elem.canvas.before:
         Color(elem.bgColor[0]/255,elem.bgColor[1]/255,elem.bgColor[2]/255,elem.bgColor[3])
         RoundedRectangle(pos=elem.pos,size=elem.size,radius=radius) if radius else Rectangle(pos=elem.pos,size=elem.size)
+
+def disableTextBox(box,value):
+    box.text = value
 
 class menuScreen(Screen):
     def __init__(self, **kwargs):
@@ -274,15 +161,28 @@ class questionScreen(Screen):
         self.paper = kwargs["paper"]
         del kwargs["ttype"],kwargs['ptype'],kwargs["paper"]
         super(questionScreen,self).__init__(**kwargs)
-        self.titleLabel = Label(text=self.ttype+' '+self.ptype+' '+self.paper,font_size='25dp',pos_hint={'x':.0,'y':.9},size_hint=(1,.1))
+        self.titleLabel = Label(text=self.ttype+' '+self.ptype+' '+self.paper,font_size='23dp',pos_hint={'x':.0,'y':.9},size_hint=(1,.1))
         self.exitBtn = Button(text="<<Exit",font_size='20dp',pos_hint={'x':.05,'y':.9},size_hint=(.1,.08),background_normal='',background_down='',background_color=(1,1,1,1))
         self.exitBtn.bind(on_press=self.returnMenu)
         self.add_widget(self.titleLabel)
         self.add_widget(self.exitBtn)
+        waitingPaperLabel = Label(text="Getting Paper...",font_size="25dp")
+        self.add_widget(waitingPaperLabel)
         if self.ttype == "Writing": self.renderWritingUploadScreen()
-        else: self.renderReadingScreen()
+        else: 
+            def startQuestion(*a):
+                data = socketClient.send({'task':'getpaper',"paperType":self.ptype,"paper":Papers[self.ttype][self.ptype][self.paper]})
+                if not data: 
+                    waitingPaperLabel.text = "Error: Cant connect to server"
+                    print('no')
+                else:
+                    self.paperText = data['text']
+                    self.questions = data['questions']
+                    self.renderReadingScreen()
+            Clock.schedule_once(startQuestion,.5)
     def renderReadingScreen(self):
-        self.textBox = TextInput(text=Papers[self.ttype][self.ptype][self.paper]['text'],font_size='20dp',pos_hint={'x':.1,'y':.45},size_hint=(.8,.45))
+        self.textBox = TextInput(text=self.paperText,font_size='20dp',pos_hint={'x':.1,'y':.45},size_hint=(.8,.45))
+        self.textBox.bind(text=lambda a,b:disableTextBox(a,self.paperText))
         self.previousBtn = Button(text="<=Previous",font_size='20dp',pos_hint={'x':.15,'y':.05},size_hint=(.18,.08),disabled=True)
         self.nextBtn = Button(text="Next=>",font_size='20dp',pos_hint={'x':.67,'y':.05},size_hint=(.18,.08),disabled=True)
         self.previousBtn.bind(on_press=self.previousQuestion)
@@ -291,7 +191,7 @@ class questionScreen(Screen):
         self.add_widget(self.previousBtn)
         self.add_widget(self.nextBtn)
         self.questionsElem = []
-        for question in Papers[self.ttype][self.ptype][self.paper]['questions']:
+        for question in self.questions:
             elems = []
             questionLabel = Label(text=question['question'],font_size='18dp',pos_hint={'x':.02,'y':-.12},halign="left",valign="middle",padding=(70,70))
             questionLabel.bind(size=questionLabel.setter('text_size'))
@@ -306,7 +206,7 @@ class questionScreen(Screen):
                 for ans in question['choice']:
                     ansY -= .05
                     box = BoxLayout(pos_hint={'x':-.37,'y':ansY})
-                    ansBox = CheckBox(size_hint=(.1,.1),group=self.paper+'Q'+str(Papers[self.ttype][self.ptype][self.paper]['questions'].index(question)+1))
+                    ansBox = CheckBox(size_hint=(.1,.1),group=self.paper+'Q'+str(self.questions.index(question)+1))
                     ansBox.ansNum = ans[0] #A/B/C/D
                     ansBox.bind(active=self.ansCheckBoxSelected)
                     box.add_widget(ansBox)
@@ -353,7 +253,7 @@ class questionScreen(Screen):
         advises = []
         for i in range(len(self.answered)):
             ans = self.answered[i].lower()
-            question = Papers[self.ttype][self.ptype][self.paper]['questions'][i]
+            question = self.questions[i]
             pscore += int(question['score'])
             addScore = 0
             if question['type'] == "short" or question['type'] == "MC":
@@ -370,63 +270,96 @@ class questionScreen(Screen):
         elif score / pscore > 0.4: grade = "C"
         else: grade = "D"
         self.showResult(grade,advises)
-    def showResult(self,grade,showText):
+    def resultPageResizeText(self,text):
+        t = ""
+        count = 0
+        words = text.split(' ')
+        for w in words:
+            added = count + len(w)
+            count = added if added <=20 else 0
+            t += ('\n'+w if added >20 and w != words[-1] else w+' ')
+        return t
+    def showResult(self,grade,showText,writing=None,correction=None):
         self.clear_widgets()
         bg = Label(size_hint=(1,1))
         bg.bind(size=self.renderScoreBG)
-        confirmBtn = Button(text="confirm",font_size='19dp',pos_hint={'x':.4,'y':.15},size_hint=(.2,.1))
+        confirmBtn = Button(text="confirm",font_size='19dp',pos_hint={'x':.4,'y':.15},size_hint=(.2,.05))
         confirmBtn.bind(on_press=self.returnMenu)
-        gridBox = GridLayout(cols=1,spacing=1,size_hint_y=None)
+        gridBox = GridLayout(cols=1,spacing=2,size_hint_y=None)
         gridBox.bind(minimum_height=gridBox.setter('height'))
-        scrollBox = ScrollView(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
-        scrollBoxBG = Label(pos_hint={'x':.15,'y':0.3},size_hint=(.7,.4))
+        scrollBoxSize = (.7,.28) if self.ttype == "Writing" else (.7,.4)
+        scrollBoxPos = {'x':.15,'y':0.2} if self.ttype == "Writing" else {'x':.15,'y':0.3}
+        scrollBox = ScrollView(pos_hint=scrollBoxPos,size_hint=scrollBoxSize)
+        scrollBoxBG = Label(pos_hint=scrollBoxPos,size_hint=scrollBoxSize)
         scrollBoxBG.bgColor = (127,127,127,.3)
         scrollBoxBG.bind(pos=lambda a,b:renderBG(a,b,[20]))
+        
         for i in range(len(showText)):
-            text = ""
-            count = 0
-            words = showText[i].split(' ')
-            for w in words:
-                added = count + len(w)
-                count = added if added <=20 else 0
-                text += w + ('\n' if added >20 and w != words[-1] else ' ')
-            textLabel = Label(text=str(i)+'. '+text,font_size='15dp',size_hint=(.5,None),height=self.height*.1)
+            text = self.resultPageResizeText(showText[i])
+            textLabel = Label(text=str(i+1)+'. '+text,font_size='15dp',size_hint=(.5,None))
+            if platform == 'android': textLabel.height=self.height*.1
             gridBox.add_widget(textLabel)
         scrollBox.add_widget(gridBox)
         self.add_widget(bg)
         self.add_widget(self.titleLabel)
-        self.add_widget(Label(text=('Final Grade: '+str(grade) if grade else "Final Result"),font_size='25dp',pos_hint={'x':0,'y':.3}))
-        self.add_widget(Label(text=('Advices:' if self.ttype != "Writing" else "Mistakes:"),font_size="17sp",pos_hint={'x':0,'y':0.25}))
+        self.add_widget(Label(text=('Final Grade: '+str(grade) if grade else "Final Result"),font_size='25dp',pos_hint={'x':0,'y':.35}))
         self.add_widget(scrollBox)
         self.add_widget(scrollBoxBG)
         self.add_widget(confirmBtn)
+        if correction:
+            writingBox = TextInput(text=writing,font_size='16dp',pos_hint={'x':.15,'y':.55},size_hint=scrollBoxSize)
+            writingBox.bind(text=lambda a,b:disableTextBox(a,writing))
+            self.add_widget(writingBox)
+            writingBox.do_cursor_movement("cursor_home",True)
+            gridBox = GridLayout(cols=1,spacing=2,size_hint_y=None)
+            gridBox.bind(minimum_height=gridBox.setter('height'))
+            scrollBox1 = ScrollView(pos_hint=scrollBoxPos,size_hint=scrollBoxSize)
+            text = self.resultPageResizeText(correction)
+            if platform == 'android':
+                text = text.split('\n\n')
+                for t in text:
+                    correctionLabel = Label(text=t,font_size='15dp',size_hint=(.5,None),valign="top")
+                    correctionLabel.height = len(t.split('\n'))*(self.height*(.1/4))
+                    gridBox.add_widget(correctionLabel)
+            else:
+                correctionLabel = Label(text=text,font_size='15dp',size_hint=(.5,None),valign="top")
+                correctionLabel.height = len(text.split('\n'))*18
+                gridBox.add_widget(correctionLabel)
+            scrollBox1.add_widget(gridBox)
+            mistakesBtn = Button(text="Mistakes",font_size='17dp',pos_hint={'x':.25,'y':.5},size_hint=(.19,.05))
+            correctionBtn = Button(text="Correction",font_size='17dp',pos_hint={'x':.57,'y':.5},size_hint=(.19,.05))
+            pages = [scrollBox,scrollBox1]
+            def changePage(btn,page):
+                self.remove_widget(pages[page])
+                self.remove_widget(pages[int(not page)])
+                self.add_widget(pages[page])
+            mistakesBtn.bind(on_press=lambda a:changePage(a,0))
+            correctionBtn.bind(on_press=lambda a:changePage(a,1))
+            self.add_widget(mistakesBtn)
+            self.add_widget(correctionBtn)
+        else:
+            self.add_widget(Label(text=('Advices:' if self.ttype != "Writing" else "Mistakes:"),font_size="17dp",pos_hint={'x':0,'y':0.25}))
     def renderWritingUploadScreen(self):
-        openManagerBtn = Button(text="Select your writing.txt file",pos_hint={'x':.15,'y':.5},size_hint=(.7,.05))
+        writingBox = TextInput(hint_text="Paste your writing here",font_size='16dp',pos_hint={'x':.1,'y':.45},size_hint=(.8,.45))
         confirmBtn = Button(text="^Submit^",font_size='19dp',pos_hint={'x':.4,'y':.15},size_hint=(.2,.1))
-        def selectPath(path):
-            self.filePath = "C:"+path
-            openManagerBtn.text = "Selected "+path.split('\\')[-1]
-            if not confirmBtn.parent: self.add_widget(confirmBtn)
-            self.fileManager.exit_manager()
-        self.fileManager = MDFileManager(exit_manager=lambda *a:self.fileManager.close(),select_path=selectPath,ext=['.txt'])
-        openManagerBtn.bind(on_press=lambda a:self.fileManager.show('/'))
-        confirmBtn.bind(on_press=lambda a:self.calcWritingResult())
-        self.add_widget(openManagerBtn)
-    def calcWritingResult(self):
+        confirmBtn.disabled = True
+        def onBoxInput(box,value):
+            confirmBtn.disabled = not value
+        writingBox.bind(text=onBoxInput)
+        confirmBtn.bind(on_press=lambda a:self.calcWritingResult(writingBox.text))
+        self.add_widget(writingBox)
+        self.add_widget(confirmBtn)
+    def calcWritingResult(self,writing):
         self.clear_widgets()
+        self.add_widget(self.titleLabel)
         self.add_widget(Label(text="Calculating Writing Result...",font_size="25dp"))
-        mistakes = []
-        def getMistakes():
-            with open(self.filePath,'r',encoding='utf-8') as f:
-                writing = f.read()
-                matches = grammarChecker.check(writing)
-                for m in matches:
-                    wordNo = str(len(writing[:m.errorLength+m.offset].split(' ')))
-                    mistakes.append(m.ruleIssueType+': The '+wordNo+['th','st','nd','rd',*['th']*7][int(wordNo[-1])]+" word '"+writing[m.offset:m.errorLength+m.offset]+"' should be '"+ m.replacements[0]+"'")
-                f.close()
-            print(mistakes)
-            self.showResult(None,mistakes)
-        getMistakes()
+        def sendWriting(*a):
+            data = socketClient.send({"task":"calcwriting","writing":writing})
+            if not data:return
+            print(data['mistakes'])
+            print(data['correction'])
+            self.showResult(None,data['mistakes'],writing,data['correction'])
+        Clock.schedule_once(sendWriting,1)
     def renderScoreBG(self,label,value):
         label.canvas.before.clear()
         with label.canvas.before:
@@ -444,5 +377,8 @@ class androidApp(MDApp):
         screenManager.add_widget(menuS)
         return screenManager
 
+socketClient = client()
+
 if __name__ == '__main__':
+    Window.bind(on_request_close=socketClient.close)
     androidApp().run()
